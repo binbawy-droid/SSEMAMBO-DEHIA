@@ -41,6 +41,8 @@
 @media(max-width:760px){.engage-grid{grid-template-columns:1fr 1fr}.workspace-grid{grid-template-columns:1fr 1fr}.jobs-list{grid-template-columns:1fr}.portal-form{grid-template-columns:1fr}.portal-form .wide{grid-column:auto}}
 @media(max-width:440px){.engage-grid{grid-template-columns:1fr}.workspace-grid{grid-template-columns:1fr 1fr}.nav-auth{padding:8px 10px;font-size:9px}}
 
+
+.admin-panel{margin-top:24px;padding:22px;border:1px solid var(--gold);background:#eee9dd}.admin-panel h3{font:600 24px var(--serif);margin:4px 0 12px}.admin-jobs,.admin-enquiries{display:grid;gap:8px;margin-top:14px}.admin-row{display:flex;justify-content:space-between;align-items:center;gap:14px;background:var(--white);border:1px solid var(--line);padding:12px;font-size:12px}.admin-row button{cursor:pointer;border:1px solid var(--green);background:transparent;color:var(--green);padding:7px 10px;font-size:10px}
 </style>
 </head>
 <body>
@@ -65,6 +67,25 @@
 <div class="workspace-tile"><strong>GitHub</strong><span>Repositories and software delivery</span><a href="https://github.com/" target="_blank" rel="noopener">Open GitHub ↗</a></div>
 </div>
 <div class="integration-note">Notion and Monday are enabled in the Zapier integration layer. Sign in to those apps and authorise their Zapier connections to activate account-level workflows. Website-to-board synchronisation will be enabled after the connections and workflow triggers are configured.</div>
+
+<div class="admin-panel" id="admin-panel" hidden>
+<div class="eyebrow">Team administration</div><h3>Publish a job or contract</h3>
+<form class="portal-form" id="admin-job-form">
+<label>Role title<input name="title" required maxlength="180"></label>
+<label>Department<input name="department" maxlength="120" placeholder="Software / AI / Operations"></label>
+<label>Employment type<select name="employment_type"><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Internship</option><option>Freelance</option><option>Remote</option></select></label>
+<label>Work mode<select name="work_mode"><option>Remote</option><option>Hybrid</option><option>On-site</option></select></label>
+<label>Location<input name="location" value="Uganda / Remote" maxlength="180"></label>
+<label>Salary / rate<input name="salary_range" maxlength="120" placeholder="Optional"></label>
+<label class="wide">Description<textarea name="description" required maxlength="6000"></textarea></label>
+<label class="wide">Requirements<textarea name="requirements" maxlength="6000"></textarea></label>
+<label>Application deadline<input name="application_deadline" type="date"></label>
+<label><span><input name="published" type="checkbox" checked style="width:auto;margin-right:8px">Publish immediately</span></label>
+<div class="wide"><button class="btn" type="submit">Save job listing</button><div class="portal-message" id="admin-job-message" role="status"></div></div>
+</form>
+<h3>Current job listings</h3><div class="admin-jobs" id="admin-jobs"></div>
+<h3>Recent enquiries</h3><div class="admin-enquiries" id="admin-enquiries"></div>
+</div>
 </section>
 <div class="availability"><div class="wrap"><strong>Available for remote work worldwide.</strong><span>Projects · Contracts · Employment · Consulting · Partnerships</span></div></div>
 
@@ -140,7 +161,7 @@ let currentUser=null,authMode='signin';
 const $=id=>document.getElementById(id);
 const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 function modal(id,open){$(id).classList.toggle('open',open);}
-function setAuthMode(mode){authMode=mode;const signup=mode==='signup';$('auth-title').textContent=signup?'Create your account':'Sign in to your workspace';$('auth-intro').textContent=signup?'Choose the area you want to engage with. Your workspace will be grouped around this goal.':'Use your email and password to access your personal workspace.';$('auth-name-wrap').hidden=!signup;$('auth-goal-wrap').hidden=!signup;$('auth-name').required=signup;$('auth-password').autocomplete=signup?'new-password':'current-password';$('auth-submit').textContent=signup?'Create account':'Sign in';$('switch-auth').textContent=signup?'I already have an account':'Create an account';$('forgot-password').hidden=signup;$('auth-message').textContent='';}
+function setAuthMode(mode){authMode=mode;const signup=mode==='signup';$('auth-title').textContent=signup?'Create your account':'Sign in to your workspace';$('auth-intro').textContent=signup?'Choose the area you want to engage with. Your workspace will be grouped around this goal.':'Use your email and password to access your personal workspace.';$('auth-name-wrap').hidden=!signup;$('auth-goal-wrap').hidden=!signup;$('auth-name').required=signup;$('auth-email').parentElement.hidden=false;$('auth-password').autocomplete=signup?'new-password':'current-password';$('auth-submit').textContent=signup?'Create account':'Sign in';$('switch-auth').parentElement.hidden=false;$('switch-auth').textContent=signup?'I already have an account':'Create an account';$('forgot-password').hidden=signup;$('auth-message').textContent='';}
 function goalText(goal){return ({hire_services:'Your workspace is set up for project enquiries and working with our studio.',find_job:'Your workspace is set up for careers, contract opportunities and application tracking.',collaborate:'Your workspace is set up for partnerships and collaborative projects.',learn_ai:'Your workspace is set up for AI tools, learning resources and creator workflows.',join_team:'Your workspace is set up for team opportunities and project participation.',other:'Your workspace is ready. You can update your engagement preference through support.'})[goal]||'Your workspace is ready.';}
 async function loadWorkspace(user){
   const {data:profile}=await supabase.from('binbawy_portal_profiles').select('full_name,engagement_goal').eq('id',user.id).maybeSingle();
@@ -152,6 +173,7 @@ async function loadWorkspace(user){
   $('application-count').textContent=error?'—':String(count||0);
   $('workspace').classList.add('show');
   $('open-auth').textContent='My workspace';
+  const isAdmin=user.app_metadata?.role==='admin';$('admin-panel').hidden=!isAdmin;if(isAdmin)await refreshAdminPanel();
 }
 async function refreshJobs(){
   const host=$('jobs-list');
@@ -160,6 +182,13 @@ async function refreshJobs(){
   if(!data?.length){host.innerHTML='<div class="empty-jobs">There are no published openings at the moment. You can still <a href="#contact" style="text-decoration:underline;color:var(--green)">send a speculative enquiry</a> and register your interest.</div>';return;}
   host.innerHTML=data.map(job=>'<article class="job-card"><div class="job-meta">'+escapeHTML([job.employment_type,job.work_mode,job.location].filter(Boolean).join(' · '))+'</div><h3>'+escapeHTML(job.title)+'</h3><p>'+escapeHTML(job.department||'BINBAWY TECH UG')+(job.salary_range?' · '+escapeHTML(job.salary_range):'')+'</p><p>'+escapeHTML(job.description)+'</p>'+(job.requirements?'<p><strong>Requirements</strong><br>'+escapeHTML(job.requirements)+'</p>':'')+(job.application_deadline?'<p>Apply by '+escapeHTML(job.application_deadline)+'</p>':'')+'<button class="btn apply-job" data-job-id="'+escapeHTML(job.id)+'" data-job-title="'+escapeHTML(job.title)+'">Apply now</button></article>').join('');
   host.querySelectorAll('.apply-job').forEach(btn=>btn.addEventListener('click',()=>openApplication(btn.dataset.jobId,btn.dataset.jobTitle)));
+}
+async function refreshAdminPanel(){
+  const {data:jobs}=await supabase.from('binbawy_jobs').select('id,title,published,employment_type,created_at').order('created_at',{ascending:false}).limit(20);
+  $('admin-jobs').innerHTML=(jobs||[]).map(job=>'<div class="admin-row"><span><strong>'+escapeHTML(job.title)+'</strong> · '+escapeHTML(job.employment_type)+' · '+(job.published?'Published':'Draft')+'</span><button type="button" data-toggle-job="'+escapeHTML(job.id)+'" data-published="'+String(job.published)+'">'+(job.published?'Unpublish':'Publish')+'</button></div>').join('')||'<p>No job records yet.</p>';
+  $('admin-jobs').querySelectorAll('[data-toggle-job]').forEach(button=>button.addEventListener('click',async()=>{const {error}=await supabase.from('binbawy_jobs').update({published:button.dataset.published!=='true'}).eq('id',button.dataset.toggleJob);if(error){alert(error.message);return;}await refreshJobs();await refreshAdminPanel();}));
+  const {data:enquiries}=await supabase.from('binbawy_service_enquiries').select('id,contact_name,email,engagement_type,status,message,created_at').order('created_at',{ascending:false}).limit(12);
+  $('admin-enquiries').innerHTML=(enquiries||[]).map(item=>'<div class="admin-row"><span><strong>'+escapeHTML(item.contact_name)+'</strong> · '+escapeHTML(item.email)+'<br>'+escapeHTML(item.engagement_type)+' · '+escapeHTML(item.status)+'<br>'+escapeHTML(item.message)+'</span></div>').join('')||'<p>No enquiries yet.</p>';
 }
 function openApplication(id,title){
   if(!currentUser){setAuthMode('signin');modal('portal-auth-modal',true);$('auth-message').textContent='Sign in or create an account before applying.';return;}
@@ -173,7 +202,9 @@ document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('cli
 $('auth-form').addEventListener('submit',async e=>{
   e.preventDefault();const email=$('auth-email').value.trim(),password=$('auth-password').value;const msg=$('auth-message');msg.textContent='Working…';$('auth-submit').disabled=true;
   try{
-    if(authMode==='signup'){
+    if(authMode==='recovery'){
+      const {error}=await supabase.auth.updateUser({password});if(error)throw error;msg.textContent='Password updated successfully.';setTimeout(()=>modal('portal-auth-modal',false),900);authMode='signin';
+    }else if(authMode==='signup'){
       const full_name=$('auth-name').value.trim(),engagement_goal=$('auth-goal').value;
       const {data,error}=await supabase.auth.signUp({email,password,options:{data:{full_name,engagement_goal},emailRedirectTo:window.location.origin+'/'}});if(error)throw error;
       if(data.session){currentUser=data.user;await supabase.from('binbawy_portal_profiles').upsert({id:data.user.id,full_name,engagement_goal},{onConflict:'id'});modal('portal-auth-modal',false);await loadWorkspace(data.user);}
@@ -187,6 +218,12 @@ $('auth-form').addEventListener('submit',async e=>{
 });
 $('forgot-password').addEventListener('click',async()=>{const email=$('auth-email').value.trim();if(!email){$('auth-message').textContent='Enter your email address first.';return;}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/'});$('auth-message').textContent=error?error.message:'If the account exists, a password-reset email has been sent.';});
 $('sign-out').addEventListener('click',async()=>{await supabase.auth.signOut();currentUser=null;$('workspace').classList.remove('show');$('open-auth').textContent='Sign in';});
+$('admin-job-form').addEventListener('submit',async e=>{
+ e.preventDefault();if(currentUser?.app_metadata?.role!=='admin')return;
+ const fd=new FormData(e.currentTarget),payload={title:String(fd.get('title')).trim(),department:String(fd.get('department')).trim()||null,employment_type:fd.get('employment_type'),work_mode:fd.get('work_mode'),location:String(fd.get('location')).trim()||null,salary_range:String(fd.get('salary_range')).trim()||null,description:String(fd.get('description')).trim(),requirements:String(fd.get('requirements')).trim()||null,application_deadline:fd.get('application_deadline')||null,published:fd.get('published')==='on',created_by:currentUser.id};
+ const button=e.currentTarget.querySelector('button[type=submit]');button.disabled=true;$('admin-job-message').textContent='Saving…';
+ const {error}=await supabase.from('binbawy_jobs').insert(payload);button.disabled=false;$('admin-job-message').textContent=error?'Unable to save: '+error.message:'Job listing saved.';if(!error){e.currentTarget.reset();await refreshJobs();await refreshAdminPanel();}
+});
 $('job-apply-form').addEventListener('submit',async e=>{
  e.preventDefault();if(!currentUser){$('apply-message').textContent='Sign in before applying.';return;}
  const payload={job_id:$('apply-job-id').value,applicant_id:currentUser.id,full_name:$('apply-name').value.trim(),email:$('apply-email').value.trim(),phone:$('apply-phone').value.trim()||null,portfolio_url:$('apply-portfolio').value.trim()||null,cv_url:$('apply-cv').value.trim()||null,cover_letter:$('apply-cover').value.trim()||null};
@@ -198,7 +235,13 @@ $('enquiry-form').addEventListener('submit',async e=>{
  const button=form.querySelector('button[type=submit]');button.disabled=true;$('enquiry-message').textContent='Sending…';
  const {error}=await supabase.from('binbawy_service_enquiries').insert(payload);button.disabled=false;$('enquiry-message').textContent=error?'Unable to submit: '+error.message:'Enquiry received. We will follow up using the contact details you provided.';if(!error)form.reset();
 });
-supabase.auth.onAuthStateChange(async(event,session)=>{currentUser=session?.user||null;if(currentUser){await loadWorkspace(currentUser);}else{$('workspace').classList.remove('show');$('open-auth').textContent='Sign in';}});
+supabase.auth.onAuthStateChange((event,session)=>{
+ currentUser=session?.user||null;
+ if(event==='PASSWORD_RECOVERY'){
+   authMode='recovery';$('auth-title').textContent='Choose a new password';$('auth-intro').textContent='Enter a new password for your account.';$('auth-name-wrap').hidden=true;$('auth-goal-wrap').hidden=true;$('auth-email').parentElement.hidden=true;$('auth-password').value='';$('auth-password').autocomplete='new-password';$('auth-submit').textContent='Update password';$('switch-auth').parentElement.hidden=true;$('auth-message').textContent='';modal('portal-auth-modal',true);return;
+ }
+ if(currentUser){setTimeout(()=>loadWorkspace(currentUser),0);}else{$('workspace').classList.remove('show');$('admin-panel').hidden=true;$('open-auth').textContent='Sign in';}
+});
 const {data:{session}}=await supabase.auth.getSession();if(session?.user){currentUser=session.user;await loadWorkspace(currentUser);}
 await refreshJobs();
 </script>
