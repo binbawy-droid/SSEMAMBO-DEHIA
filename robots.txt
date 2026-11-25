@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://binbawy-droid.github.io/SSEMAMBO-DEHIA/sitemap.xml
