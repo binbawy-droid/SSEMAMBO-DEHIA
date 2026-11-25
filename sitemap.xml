@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://binbawy-droid.github.io/SSEMAMBO-DEHIA/</loc>
+    <loc>https://binbawy-tech-ug.vercel.app/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
   </url>
 </urlset>
