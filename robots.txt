@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
-Sitemap: https://binbawy-droid.github.io/SSEMAMBO-DEHIA/sitemap.xml
+
+Sitemap: https://binbawy-tech-ug.vercel.app/sitemap.xml
