@@ -119,13 +119,14 @@
 .trust-grid strong{font:600 18px var(--serif)}
 .trust-grid p{font-size:12px;color:var(--muted);margin:7px 0 0}
 .trust-note{font-size:11px;color:var(--muted);padding:12px 14px;background:#e9e5da;border-left:3px solid var(--gold);margin:16px 0 0}
+.gemini-badge{display:inline-flex;align-items:center;gap:.45rem;border:1px solid var(--line);border-radius:99px;padding:.3rem .65rem;font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap}.gemini-badge::before{content:"";width:7px;height:7px;border-radius:50%;background:#a7834e;display:inline-block}.gemini-badge[data-state="ready"]::before{background:#27845b}
 @media(max-width:760px){.trust-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:440px){.trust-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="topline"><div class="wrap"><span>Independent technology studio · Uganda</span><span>Remote projects · Worldwide</span></div></div>
-<header class="wrap nav"><a class="brand" href="#">BINBAWY TECH UG<span>SOFTWARE · AI · AUTOMATION</span></a><nav class="navlinks"><a href="#services">Services</a><a href="#work">Portfolio</a><a href="#about">About</a><a href="/ssemambo-dehia/">Founder</a><a href="#contact">Contact</a><a href="/jobs.html">Worldwide Jobs</a><button class="nav-auth" id="open-auth">Sign in</button></nav></header>
+<header class="wrap nav"><a class="brand" href="#">BINBAWY TECH UG<span>SOFTWARE · AI · AUTOMATION</span></a><span class="gemini-badge" id="gemini-header-badge" aria-live="polite">Gemini status: checking</span><nav class="navlinks"><a href="#services">Services</a><a href="#work">Portfolio</a><a href="#about">About</a><a href="/ssemambo-dehia/">Founder</a><a href="#contact">Contact</a><a href="/jobs.html">Worldwide Jobs</a><button class="nav-auth" id="open-auth">Sign in</button></nav></header>
 <main>
 <section class="wrap hero">
 <div><div class="kicker">Technology, made useful</div><h1>Build with clarity.<br><em>Work without borders.</em></h1><p class="intro">BINBAWY TECH UG is an independent software and technology studio led by Ssemambo Dehia in Uganda. We design and build digital products, AI-powered systems and practical automation for people and organisations locally and around the world.</p><div class="actions"><a class="btn" href="#contact">Discuss a project</a><a class="btn alt" href="#work">Explore the portfolio</a></div></div>
@@ -285,13 +286,19 @@
 </form>
 <p class="smallcaps">Founder: Ssemambo Dehia · BINBAWY TECH UG · <a href="https://binbawy-tech-ug.vercel.app/">Official website</a></p></div></section>
 </main>
-<footer><div class="wrap foot"><span>© <span id="year">2026</span> BINBAWY TECH UG · SSEMAMBO DEHIA</span><span class="smallcaps">Uganda · Remote worldwide · <a href="/legal.html">Terms &amp; Privacy</a></span></div></footer>
+<footer><div class="wrap foot"><span>© <span id="year">2026</span> BINBAWY TECH UG · SSEMAMBO DEHIA</span><span class="smallcaps">Uganda · Remote worldwide · <a href="/legal.html">Terms &amp; Privacy</a></span><span class="gemini-badge" id="gemini-footer-badge" aria-live="polite">Gemini status: checking</span></div></footer>
 <script>document.getElementById('year').textContent=new Date().getFullYear();</script>
 <script>
 (async function(){
- const el=document.getElementById('gemini-status');if(!el)return;
- try{const r=await fetch('/api/gemini-status',{cache:'no-store'}),d=await r.json();el.textContent=d.gemini_configured?'Gemini-assisted intake & concierge configured':'Gemini setup pending · site guide available';}
- catch{el.textContent='Gemini status unavailable';}
+ const nodes=['gemini-status','gemini-header-badge','gemini-footer-badge'].map(id=>document.getElementById(id)).filter(Boolean);
+ if(!nodes.length)return;
+ function setStatus(label,state){nodes.forEach(el=>{el.textContent=label;el.dataset.state=state;});}
+ try{
+   const r=await fetch('/api/gemini-status',{cache:'no-store'});
+   if(!r.ok)throw new Error('status unavailable');
+   const d=await r.json();
+   setStatus(d.gemini_configured?'Gemini-assisted AI available':'Gemini setup pending · local site guide available',d.gemini_configured?'ready':'pending');
+ }catch{setStatus('Gemini status unavailable','unknown');}
 })();
 </script>
 
