@@ -113,6 +113,14 @@
 #binbawy-concierge-form button{border:0;background:var(--green,#263f35);color:white;padding:0 15px;cursor:pointer}
 @media(max-width:480px){#binbawy-concierge{right:12px;bottom:12px}}
 
+
+.trust-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.trust-grid article{padding:17px;background:var(--white);border:1px solid var(--line)}
+.trust-grid strong{font:600 18px var(--serif)}
+.trust-grid p{font-size:12px;color:var(--muted);margin:7px 0 0}
+.trust-note{font-size:11px;color:var(--muted);padding:12px 14px;background:#e9e5da;border-left:3px solid var(--gold);margin:16px 0 0}
+@media(max-width:760px){.trust-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:440px){.trust-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -123,6 +131,21 @@
 <div><div class="kicker">Technology, made useful</div><h1>Build with clarity.<br><em>Work without borders.</em></h1><p class="intro">BINBAWY TECH UG is an independent software and technology studio led by Ssemambo Dehia in Uganda. We design and build digital products, AI-powered systems and practical automation for people and organisations locally and around the world.</p><div class="actions"><a class="btn" href="#contact">Discuss a project</a><a class="btn alt" href="#work">Explore the portfolio</a></div></div>
 <figure class="portrait"><img src="https://raw.githubusercontent.com/binbawy-droid/binbawy-droid/main/assets/ssemambo-dehia-red-suit.jpg" alt="Ssemambo Dehia, founder of BINBAWY TECH UG"></figure>
 </section>
+<section class="wrap" aria-labelledby="global-trust-title" style="padding:28px 0 34px;border-bottom:1px solid var(--line)">
+  <div class="eyebrow">Working with an international studio</div>
+  <h2 id="global-trust-title" style="font:600 clamp(27px,3vw,38px)/1.15 var(--serif);margin:8px 0 20px">Clear scope. Written terms. Visible progress.</h2>
+  <div class="trust-grid">
+    <article><strong>Written project scope</strong><p>Each accepted project is defined in a written quote or Statement of Work, including deliverables, milestones, fees and acceptance criteria.</p></article>
+    <article><strong>Milestone visibility</strong><p>Approved projects can show quotes, delivery progress and milestones in the client workspace. Payment timing is stated in the agreed quote.</p></article>
+    <article><strong>Client IP terms</strong><p>Ownership and licensing of custom deliverables are agreed in writing. Transfer of rights is subject to the signed project terms and any outstanding payment.</p></article>
+    <article><strong>Privacy and confidentiality</strong><p>Share only the information needed for an enquiry. A separate mutual NDA can be reviewed and signed before confidential materials are exchanged.</p></article>
+    <article><strong>Cross-border coordination</strong><p>Based in Uganda (EAT, UTC+3). Remote meetings across GMT, North American and Asian time zones can be arranged by agreement.</p></article>
+    <article><strong>Payment transparency</strong><p>No payment is taken when you submit an enquiry. Accepted payment methods, currency, deposit and refund terms are confirmed in writing before work begins.</p></article>
+  </div>
+  <p class="trust-note">BINBAWY TECH UG does not currently advertise third-party escrow, guaranteed two-hour response times or 24/7 human support. Do not send passwords, API secrets or sensitive personal data through public enquiry forms.</p>
+  <p style="font-size:12px;margin:14px 0 0"><a href="/legal.html" style="text-decoration:underline">Read website terms and privacy notice</a></p>
+</section>
+
 
 <section class="wrap workspace" id="workspace" aria-live="polite">
 <div class="workspace-head"><div><div class="eyebrow">Your BINBAWY workspace</div><h2 id="workspace-greeting">Welcome</h2><p id="workspace-route" class="intro" style="font-size:13px;margin:0">Your dashboard is ready.</p></div><div class="workspace-actions"><a class="btn alt" href="/dashboard.html">Open dashboard</a><a class="btn alt" href="#jobs">Browse jobs</a><button class="btn" id="sign-out" type="button">Sign out</button></div></div>
@@ -262,7 +285,7 @@
 </form>
 <p class="smallcaps">Founder: Ssemambo Dehia · BINBAWY TECH UG · <a href="https://binbawy-tech-ug.vercel.app/">Official website</a></p></div></section>
 </main>
-<footer><div class="wrap foot"><span>© <span id="year">2026</span> BINBAWY TECH UG · SSEMAMBO DEHIA</span><span class="smallcaps">Uganda · Remote worldwide</span></div></footer>
+<footer><div class="wrap foot"><span>© <span id="year">2026</span> BINBAWY TECH UG · SSEMAMBO DEHIA</span><span class="smallcaps">Uganda · Remote worldwide · <a href="/legal.html">Terms &amp; Privacy</a></span></div></footer>
 <script>document.getElementById('year').textContent=new Date().getFullYear();</script>
 
 <div class="modal-overlay" id="portal-auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
