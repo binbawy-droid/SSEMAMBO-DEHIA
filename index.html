@@ -228,7 +228,7 @@
 </div>
 </div>
 </section>
-<div class="availability"><div class="wrap"><strong>Available for remote work worldwide.</strong><span>Projects · Contracts · Employment · Consulting · Partnerships</span></div></div>
+<div class="availability"><div class="wrap"><strong>Available for remote work worldwide.</strong><span>Projects · Contracts · Employment · Consulting · Partnerships</span><span id="gemini-status" aria-live="polite">Gemini integration: checking</span></div></div>
 
 <section class="wrap section" id="engage"><div class="section-head"><div><div class="eyebrow">Choose your path</div><h2>What would you like to do?</h2></div><p>Create an account to access the workspace and get a route matched to your goal.</p></div>
 <div class="engage-grid">
@@ -287,6 +287,13 @@
 </main>
 <footer><div class="wrap foot"><span>© <span id="year">2026</span> BINBAWY TECH UG · SSEMAMBO DEHIA</span><span class="smallcaps">Uganda · Remote worldwide · <a href="/legal.html">Terms &amp; Privacy</a></span></div></footer>
 <script>document.getElementById('year').textContent=new Date().getFullYear();</script>
+<script>
+(async function(){
+ const el=document.getElementById('gemini-status');if(!el)return;
+ try{const r=await fetch('/api/gemini-status',{cache:'no-store'}),d=await r.json();el.textContent=d.gemini_configured?'Gemini-assisted intake & concierge configured':'Gemini setup pending · site guide available';}
+ catch{el.textContent='Gemini status unavailable';}
+})();
+</script>
 
 <div class="modal-overlay" id="portal-auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
 <div class="modal-card"><button class="modal-close" type="button" data-close="portal-auth-modal" aria-label="Close">×</button><div class="eyebrow">BINBAWY TECH UG account</div><h2 id="auth-title">Sign in to your workspace</h2><p id="auth-intro">Use your email and password to access your personal workspace.</p>
@@ -407,8 +414,14 @@ async function refreshClientBuilds(user){
 });
 $('enquiry-form').addEventListener('submit',async e=>{
  e.preventDefault();const form=e.currentTarget,fd=new FormData(form);const payload={engagement_type:fd.get('engagement_type'),contact_name:String(fd.get('contact_name')).trim(),email:String(fd.get('email')).trim(),phone:String(fd.get('phone')).trim()||null,message:String(fd.get('message')).trim(),user_id:currentUser?.id||null};
- const button=form.querySelector('button[type=submit]');button.disabled=true;$('enquiry-message').textContent='Sending…';
- const {error}=await supabase.from('binbawy_service_enquiries').insert(payload);button.disabled=false;$('enquiry-message').textContent=error?'Unable to submit: '+error.message:'Enquiry received. We will follow up using the contact details you provided.';if(!error)form.reset();
+ const button=form.querySelector('button[type=submit]');button.disabled=true;$('enquiry-message').textContent='Gemini is screening your enquiry…';
+ try {
+   const ai=await verifyWithGemini(payload);
+   const {error}=await supabase.from('binbawy_service_enquiries').insert(payload);
+   $('enquiry-message').textContent=error?'Unable to save enquiry: '+error.message:'Enquiry received after AI-assisted screening. '+ai.message+' Final scope, pricing and timing require human review.';
+   if(!error)form.reset();
+ } catch(err) { $('enquiry-message').textContent=err.message; }
+ finally { button.disabled=false; }
 });
 supabase.auth.onAuthStateChange((event,session)=>{
  currentUser=session?.user||null;
@@ -424,13 +437,32 @@ const query=new URLSearchParams(window.location.search);if(query.get('signin')==
 </body></html>+escapeHTML(Number(q.price_usd).toFixed(2))+'</strong><div>'+escapeHTML(q.status.replaceAll('_',' '))+' · Valid until '+escapeHTML(q.valid_until||'not specified')+'</div><p>'+escapeHTML(q.scope)+'</p>'+(q.status==='approved'&&q.payment_url?'<a class="btn" href="'+escapeHTML(q.payment_url)+'" target="_blank" rel="noopener">Open payment page</a>':'')+'</div>').join(''):'<p class="intro" style="font-size:11px">No quote issued.</p>')+(ms.length?ms.map(m=>'<div class="build-milestone"><strong>'+escapeHTML(m.title)+'</strong><div>'+escapeHTML(m.status.replaceAll('_',' '))+' · '+escapeHTML(m.due_date||'No due date')+'</div>'+(m.description?'<p>'+escapeHTML(m.description)+'</p>':'')+'</div>').join(''):'<p class="intro" style="font-size:11px">Milestones will appear here when scheduled.</p>')+'</article>';
   }).join('');
 }
+async function verifyWithGemini(payload) {
+  const response = await fetch('/api/gemini-gatekeeper', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      client_name: payload.contact_name || payload.client_name || '',
+      client_email: payload.email || payload.client_email || '',
+      country: payload.country || '',
+      category: payload.engagement_type || payload.category || 'General project enquiry',
+      budget_usd: payload.budget_usd ?? null,
+      problem_description: payload.message || payload.problem_description || ''
+    })
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || !result.success) throw new Error(result.error || 'AI screening could not verify this submission.');
+  return result;
+}
 $('build-request-form').addEventListener('submit',async e=>{
   e.preventDefault();if(!currentUser){$('build-request-message').textContent='Sign in before submitting a build brief.';return;}
   const form=e.currentTarget,fd=new FormData(form),title=String(fd.get('build_title')).trim(),details=String(fd.get('message')).trim();
   const payload={user_id:currentUser.id,is_build_request:true,engagement_type:fd.get('engagement_type'),contact_name:currentUser.user_metadata?.full_name||currentUser.email?.split('@')[0]||'Client',email:currentUser.email,company_name:String(fd.get('company_name')).trim()||null,country:String(fd.get('country')).trim(),industry:String(fd.get('industry')).trim()||null,budget_usd:fd.get('budget_usd')?Number(fd.get('budget_usd')):null,target_date:fd.get('target_date')||null,message:'Build: '+title+'\\n\\n'+details};
-  const button=form.querySelector('button[type=submit]');button.disabled=true;$('build-request-message').textContent='Submitting…';
+  const button=form.querySelector('button[type=submit]');button.disabled=true;$('build-request-message').textContent='Gemini is screening your brief…';
+  let ai;
+  try { ai=await verifyWithGemini(payload); }
+  catch(err) { button.disabled=false; $('build-request-message').textContent=err.message; return; }
   const {error}=await supabase.from('binbawy_service_enquiries').insert(payload);button.disabled=false;
-  $('build-request-message').textContent=error?'Unable to submit: '+error.message:'Build brief submitted. It is awaiting team review; no payment has been taken.';
+  $('build-request-message').textContent=error?'Unable to submit: '+error.message:'Brief received after AI-assisted screening. '+ai.message+' Preliminary stack: '+ai.stack+'. Indicative timeline: '+ai.timeline+'. Final scope, pricing and schedule require human review.';
   if(!error)form.reset();
 });
 $('admin-build-form').addEventListener('submit',async e=>{
@@ -522,10 +554,19 @@ await refreshJobs();
     if(/service|build|website|app|software|automation|ai|agent/.test(q))return ['BINBAWY TECH UG handles software, web applications, AI systems and workflow automation. Send a project brief for a scope review.',{href:'/#client-build-panel',label:'Discuss a project'}];
     return ['I can help route you to the right section. Ask about services, project pricing, the founder, or remote jobs.',null];
   }
-  form.addEventListener('submit',function(event){
+  let conciergeHistory=[];
+  form.addEventListener('submit',async function(event){
     event.preventDefault();const q=input.value.trim();if(!q)return;
-    addMessage(q,'user');input.value='';
-    const result=answer(q);addMessage(result[0],'assistant',result[1]);
+    addMessage(q,'user');input.value='';input.disabled=true;
+    try {
+      const response=await fetch('/api/gemini-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,history:conciergeHistory})});
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok||!result.success)throw new Error(result.error||'AI concierge unavailable');
+      addMessage(result.answer,'assistant');
+      conciergeHistory=[...conciergeHistory,{role:'user',text:q},{role:'model',text:result.answer}].slice(-6);
+    } catch(err) {
+      const fallback=answer(q);addMessage(fallback[0]+' (Local site guide: '+err.message+').','assistant',fallback[1]);
+    } finally { input.disabled=false;input.focus(); }
   });
 })();
 </script>
