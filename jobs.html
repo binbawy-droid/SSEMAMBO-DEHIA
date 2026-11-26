@@ -116,11 +116,11 @@ async function loadAgencyJobs(){
  const {data,error}=await supabase.from('binbawy_jobs').select('id,title,department,employment_type,work_mode,location,description,requirements,salary_range,application_deadline').eq('published',true).order('created_at',{ascending:false}).limit(30);
  if(error){host.innerHTML='<div class="job">Agency listings are temporarily unavailable.</div>';return;}
  if(!data?.length){host.innerHTML='<div class="job">There are no published agency contractor roles at the moment. You can still register your profile below.</div>';return;}
- host.innerHTML=data.map(j=>'<article class="job"><small>'+esc(j.department||'BINBAWY TECH UG')+' · '+esc(j.employment_type)+' · '+esc(j.work_mode)+'</small><h3>'+esc(j.title)+'</h3><p>'+esc(j.description)+'<br><br><strong>'+esc(j.salary_range||'Compensation to be discussed in the listing')+'</strong><br>'+esc(j.location||'Remote')+' · Deadline: '+esc(j.application_deadline||'Not specified')+'</p><a href="/?apply='+encodeURIComponent(j.id)+'#jobs">Sign in and apply ↗</a></article>').join('');
+ host.innerHTML=data.map(j=>'<article class="job"><small>'+esc(j.department||'BINBAWY TECH UG')+' · '+esc(j.employment_type)+' · '+esc(j.work_mode)+'</small><h3>'+esc(j.title)+'</h3><p>'+esc(j.description)+'<br><br><strong>'+esc(j.salary_range||'Compensation to be discussed in the listing')+'</strong><br>'+esc(j.location||'Remote')+' · Deadline: '+esc(j.application_deadline||'Not specified')+'</p><a href="/#jobs">Sign in and apply ↗</a></article>').join('');
 }
 function renderProfile(p){
  $('profile-summary').innerHTML=p?'<div class="note">Your contractor profile is on file. Review status: <strong>'+esc(p.status)+'</strong>. You can update it while it is pending.</div>':'';
- if(p){const f=$('contractor-form');for(const k of ['full_name','email','country','experience_level','skills','portfolio_url','availability','rate_expectation'])if(f.elements[k])f.elements[k].value=p[k]||'';f.elements.consent.checked=!!p.consent;}
+ if(p){const f=$('contractor-form');for(const k of ['full_name','email','country','experience_level','skills','portfolio_url','availability','rate_expectation'])if(f.elements[k])f.elements[k].value=p[k]||'';f.elements.consent.checked=!!p.consent;if(p.status!=='pending'){for(const el of f.elements)el.disabled=true;$('form-status').textContent='This profile is '+p.status+'. Contact the agency if you need to amend it.';}}
 }
 async function loadReview(){
  const {data,error}=await supabase.from('binbawy_contractor_profiles').select('id,full_name,email,country,skills,experience_level,portfolio_url,status,created_at').order('created_at',{ascending:false}).limit(100);
