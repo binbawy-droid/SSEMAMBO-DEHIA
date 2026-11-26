@@ -96,6 +96,23 @@
 @media(max-width:760px){.build-grid,.build-columns,.admin-build-tools form{grid-template-columns:1fr}.admin-build-tools .wide{grid-column:auto}}
 
 .admin-panel{margin-top:24px;padding:22px;border:1px solid var(--gold);background:#eee9dd}.admin-panel h3{font:600 24px var(--serif);margin:4px 0 12px}.admin-jobs,.admin-enquiries{display:grid;gap:8px;margin-top:14px}.admin-row{display:flex;justify-content:space-between;align-items:center;gap:14px;background:var(--white);border:1px solid var(--line);padding:12px;font-size:12px}.admin-row button{cursor:pointer;border:1px solid var(--green);background:transparent;color:var(--green);padding:7px 10px;font-size:10px}
+
+/* BINBAWY agency concierge */
+#binbawy-concierge{position:fixed;right:20px;bottom:20px;z-index:9999;font-family:var(--sans,Arial,sans-serif)}
+#binbawy-concierge-toggle{border:0;background:var(--green,#263f35);color:#fff;padding:13px 18px;border-radius:999px;font-weight:700;box-shadow:0 5px 18px #0002;cursor:pointer}
+#binbawy-concierge-panel{width:min(350px,calc(100vw - 28px));background:var(--white,#fffdf8);border:1px solid var(--line,#d8d4c9);box-shadow:0 12px 36px #0003;margin-bottom:10px}
+#binbawy-concierge-panel[hidden]{display:none}
+#binbawy-concierge-head{display:flex;justify-content:space-between;align-items:center;background:var(--green,#263f35);color:#fff;padding:12px 14px;font-weight:700}
+#binbawy-concierge-close{background:transparent;border:0;color:#fff;font-size:22px;cursor:pointer}
+#binbawy-concierge-messages{height:240px;overflow:auto;padding:13px;font-size:13px}
+.concierge-message{padding:9px 11px;margin:0 0 10px;background:#eeeae0;max-width:95%;overflow-wrap:anywhere}
+.concierge-message.user{margin-left:auto;background:#e1e9e2}
+.concierge-message a{color:#24533e;text-decoration:underline}
+#binbawy-concierge-form{display:flex;border-top:1px solid var(--line,#d8d4c9)}
+#binbawy-concierge-input{min-width:0;flex:1;padding:12px;border:0;background:transparent;color:var(--ink,#20231f);font:inherit}
+#binbawy-concierge-form button{border:0;background:var(--green,#263f35);color:white;padding:0 15px;cursor:pointer}
+@media(max-width:480px){#binbawy-concierge{right:12px;bottom:12px}}
+
 </style>
 </head>
 <body>
@@ -443,5 +460,50 @@ supabase.auth.onAuthStateChange((event,session)=>{
 });
 const {data:{session}}=await supabase.auth.getSession();if(session?.user){currentUser=session.user;await loadWorkspace(currentUser);}
 await refreshJobs();
+</script>
+
+<div id="binbawy-concierge">
+  <section id="binbawy-concierge-panel" aria-label="BINBAWY agency concierge" hidden>
+    <div id="binbawy-concierge-head"><span>BINBAWY Agency Concierge</span><button id="binbawy-concierge-close" type="button" aria-label="Close chat">×</button></div>
+    <div id="binbawy-concierge-messages" aria-live="polite">
+      <p class="concierge-message">Welcome to BINBAWY TECH UG. I can direct you to project enquiries, the founder profile or the remote-work directory. This is an automated site guide, not a live AI agent.</p>
+    </div>
+    <form id="binbawy-concierge-form">
+      <input id="binbawy-concierge-input" type="text" maxlength="500" placeholder="Ask about services or jobs…" autocomplete="off" aria-label="Ask a question">
+      <button type="submit">Send</button>
+    </form>
+  </section>
+  <button id="binbawy-concierge-toggle" type="button" aria-expanded="false">Ask the Agency</button>
+</div>
+<script>
+(function(){
+  const panel=document.getElementById('binbawy-concierge-panel');
+  const toggle=document.getElementById('binbawy-concierge-toggle');
+  const close=document.getElementById('binbawy-concierge-close');
+  const form=document.getElementById('binbawy-concierge-form');
+  const input=document.getElementById('binbawy-concierge-input');
+  const messages=document.getElementById('binbawy-concierge-messages');
+  function setOpen(open){panel.hidden=!open;toggle.setAttribute('aria-expanded',String(open));if(open)input.focus();}
+  toggle.addEventListener('click',()=>setOpen(panel.hidden));
+  close.addEventListener('click',()=>setOpen(false));
+  function addMessage(text,kind,link){
+    const p=document.createElement('p');p.className='concierge-message'+(kind==='user'?' user':'');p.textContent=text;
+    if(link){p.appendChild(document.createTextNode(' '));const a=document.createElement('a');a.href=link.href;a.textContent=link.label;p.appendChild(a);}
+    messages.appendChild(p);messages.scrollTop=messages.scrollHeight;
+  }
+  function answer(question){
+    const q=question.toLowerCase();
+    if(/job|work|apply|career|vacanc|remote/.test(q))return ['Browse third-party remote-work platforms and current syndicated listings. Check each employer’s country and payout terms before applying.',{href:'/jobs.html',label:'Open Worldwide Jobs'}];
+    if(/founder|owner|ssemambo|dehia/.test(q))return ['Read the public founder profile and its linked professional accounts.',{href:'/ssemambo-dehia/',label:'View Founder Profile'}];
+    if(/price|cost|pay|payment|budget|quote/.test(q))return ['Project pricing is scoped after a brief is reviewed. No payment is collected by this chat. Submit a project enquiry to discuss scope and budget.',{href:'/#client-build-panel',label:'Submit a project brief'}];
+    if(/service|build|website|app|software|automation|ai|agent/.test(q))return ['BINBAWY TECH UG handles software, web applications, AI systems and workflow automation. Send a project brief for a scope review.',{href:'/#client-build-panel',label:'Discuss a project'}];
+    return ['I can help route you to the right section. Ask about services, project pricing, the founder, or remote jobs.',null];
+  }
+  form.addEventListener('submit',function(event){
+    event.preventDefault();const q=input.value.trim();if(!q)return;
+    addMessage(q,'user');input.value='';
+    const result=answer(q);addMessage(result[0],'assistant',result[1]);
+  });
+})();
 </script>
 </body></html>
