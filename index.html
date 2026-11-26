@@ -108,7 +108,7 @@
 </section>
 
 <section class="wrap workspace" id="workspace" aria-live="polite">
-<div class="workspace-head"><div><div class="eyebrow">Your BINBAWY workspace</div><h2 id="workspace-greeting">Welcome</h2><p id="workspace-route" class="intro" style="font-size:13px;margin:0">Your dashboard is ready.</p></div><div class="workspace-actions"><a class="btn alt" href="#jobs">Browse jobs</a><button class="btn" id="sign-out" type="button">Sign out</button></div></div>
+<div class="workspace-head"><div><div class="eyebrow">Your BINBAWY workspace</div><h2 id="workspace-greeting">Welcome</h2><p id="workspace-route" class="intro" style="font-size:13px;margin:0">Your dashboard is ready.</p></div><div class="workspace-actions"><a class="btn alt" href="/dashboard.html">Open dashboard</a><a class="btn alt" href="#jobs">Browse jobs</a><button class="btn" id="sign-out" type="button">Sign out</button></div></div>
 <div class="workspace-grid">
 <div class="workspace-tile"><strong id="application-count">0</strong><span>Job applications</span><a href="#jobs">Browse opportunities</a></div>
 <div class="workspace-tile"><strong>Notion + AI</strong><span>Knowledge base and project notes</span><a href="https://www.notion.so/login" target="_blank" rel="noopener">Open Notion ↗</a></div>
@@ -315,7 +315,7 @@ function openApplication(id,title){
   if(!currentUser){setAuthMode('signin');modal('portal-auth-modal',true);$('auth-message').textContent='Sign in or create an account before applying.';return;}
   $('apply-job-id').value=id;$('apply-job-title').textContent=title;$('apply-message').textContent='';$('apply-name').value=currentUser.user_metadata?.full_name||'';$('apply-email').value=currentUser.email||'';modal('job-apply-modal',true);
 }
-$('open-auth').addEventListener('click',()=>{if(currentUser){$('workspace').scrollIntoView({behavior:'smooth'});}else{setAuthMode('signin');modal('portal-auth-modal',true);}});
+$('open-auth').addEventListener('click',()=>{if(currentUser){window.location.assign('/dashboard.html');}else{setAuthMode('signin');modal('portal-auth-modal',true);}});
 $('engage-signin').addEventListener('click',e=>{e.preventDefault();setAuthMode('signup');modal('portal-auth-modal',true);});
 $('switch-auth').addEventListener('click',()=>setAuthMode(authMode==='signin'?'signup':'signin'));
 document.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click',()=>modal(btn.dataset.close,false)));
@@ -328,12 +328,12 @@ $('auth-form').addEventListener('submit',async e=>{
     }else if(authMode==='signup'){
       const full_name=$('auth-name').value.trim(),engagement_goal=$('auth-goal').value;
       const {data,error}=await supabase.auth.signUp({email,password,options:{data:{full_name,engagement_goal},emailRedirectTo:window.location.origin+'/'}});if(error)throw error;
-      if(data.session){currentUser=data.user;await supabase.from('binbawy_portal_profiles').upsert({id:data.user.id,full_name,engagement_goal},{onConflict:'id'});modal('portal-auth-modal',false);await loadWorkspace(data.user);}
+      if(data.session){currentUser=data.user;await supabase.from('binbawy_portal_profiles').upsert({id:data.user.id,full_name,engagement_goal},{onConflict:'id'});modal('portal-auth-modal',false);window.location.assign('/dashboard.html');}
       else{msg.textContent='Account created. Check your email to confirm the address, then sign in.';}
     }else{
       const {data,error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;currentUser=data.user;
       await supabase.from('binbawy_portal_profiles').upsert({id:data.user.id,full_name:data.user.user_metadata?.full_name||'',engagement_goal:data.user.user_metadata?.engagement_goal||'other'},{onConflict:'id'});
-      modal('portal-auth-modal',false);await loadWorkspace(data.user);
+      modal('portal-auth-modal',false);window.location.assign('/dashboard.html');
     }
   }catch(err){msg.textContent=err.message||'Unable to complete authentication.';}finally{$('auth-submit').disabled=false;}
 });
