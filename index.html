@@ -378,6 +378,7 @@ supabase.auth.onAuthStateChange((event,session)=>{
 });
 const {data:{session}}=await supabase.auth.getSession();if(session?.user){currentUser=session.user;await loadWorkspace(currentUser);}
 await refreshJobs();
+const query=new URLSearchParams(window.location.search);if(query.get('signin')==='required'&&!currentUser){setAuthMode('signin');modal('portal-auth-modal',true);$('auth-message').textContent='Sign in to access your private dashboard.';}
 </script>
 </body></html>+escapeHTML(Number(q.price_usd).toFixed(2))+'</strong><div>'+escapeHTML(q.status.replaceAll('_',' '))+' · Valid until '+escapeHTML(q.valid_until||'not specified')+'</div><p>'+escapeHTML(q.scope)+'</p>'+(q.status==='approved'&&q.payment_url?'<a class="btn" href="'+escapeHTML(q.payment_url)+'" target="_blank" rel="noopener">Open payment page</a>':'')+'</div>').join(''):'<p class="intro" style="font-size:11px">No quote issued.</p>')+(ms.length?ms.map(m=>'<div class="build-milestone"><strong>'+escapeHTML(m.title)+'</strong><div>'+escapeHTML(m.status.replaceAll('_',' '))+' · '+escapeHTML(m.due_date||'No due date')+'</div>'+(m.description?'<p>'+escapeHTML(m.description)+'</p>':'')+'</div>').join(''):'<p class="intro" style="font-size:11px">Milestones will appear here when scheduled.</p>')+'</article>';
   }).join('');
