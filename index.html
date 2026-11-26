@@ -20,11 +20,47 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@graph":[
-{"@type":"WebSite","@id":"https://binbawy-tech-ug.vercel.app/#website","url":"https://binbawy-tech-ug.vercel.app/","name":"BINBAWY TECH UG","alternateName":"Binbawy Tech Uganda","publisher":{"@id":"https://binbawy-tech-ug.vercel.app/#organization"},"inLanguage":"en-UG"},
-{"@type":"Organization","@id":"https://binbawy-tech-ug.vercel.app/#organization","name":"BINBAWY TECH UG","url":"https://binbawy-tech-ug.vercel.app/","description":"Uganda-based software and technology studio founded by Ssemambo Dehia, providing software development, AI systems, workflow automation and technical services worldwide.","founder":{"@id":"https://binbawy-tech-ug.vercel.app/#founder"},"telephone":"+256747740534","contactPoint":{"@type":"ContactPoint","telephone":"+256747740534","contactType":"business enquiries","areaServed":["UG","Worldwide"],"availableLanguage":["English"]},"areaServed":"Worldwide","sameAs":["https://github.com/binbawy-droid","https://www.instagram.com/ugcreator46/"]},
-{"@type":"Person","@id":"https://binbawy-tech-ug.vercel.app/#founder","name":"SSEMAMBO DEHIA","jobTitle":"Founder, Software Developer and AI Creator","telephone":"+256747740534","worksFor":{"@id":"https://binbawy-tech-ug.vercel.app/#organization"},"image":"https://raw.githubusercontent.com/binbawy-droid/binbawy-droid/main/assets/ssemambo-dehia-red-suit.jpg","url":"https://binbawy-tech-ug.vercel.app/#founder","sameAs":["https://github.com/binbawy-droid","https://www.instagram.com/ugcreator46/"],"address":{"@type":"PostalAddress","addressCountry":"UG"}}
-]}
+{
+  "@context":"https://schema.org",
+  "@graph":[
+    {
+      "@type":"Person",
+      "@id":"https://binbawy-tech-ug.vercel.app/ssemambo-dehia/#person",
+      "name":"Ssemambo Dehia",
+      "givenName":"Dehia",
+      "familyName":"Ssemambo",
+      "jobTitle":"Founder & Principal Architect",
+      "nationality":{"@type":"Country","name":"Uganda"},
+      "knowsAbout":["Artificial Intelligence","Workflow Automation","Software Engineering","Digital Agency Operations","E-Commerce Systems"],
+      "worksFor":{"@id":"https://binbawy-tech-ug.vercel.app/#organization"},
+      "url":"https://binbawy-tech-ug.vercel.app/ssemambo-dehia/",
+      "image":"https://raw.githubusercontent.com/binbawy-droid/binbawy-droid/main/assets/ssemambo-dehia-red-suit.jpg",
+      "sameAs":["https://github.com/binbawy-droid","https://www.instagram.com/ugcreator46/","https://www.youtube.com/channel/UC2s2u4KcvrVMbqB2KKOwdvA"],
+      "telephone":"+256747740534"
+    },
+    {
+      "@type":"Organization",
+      "@id":"https://binbawy-tech-ug.vercel.app/#organization",
+      "name":"BINBAWY TECH UG",
+      "alternateName":"Binbawy Tech Uganda",
+      "url":"https://binbawy-tech-ug.vercel.app/",
+      "description":"Uganda-based software and technology studio founded by Ssemambo Dehia, providing software development, AI systems, workflow automation and technical services worldwide.",
+      "founder":{"@id":"https://binbawy-tech-ug.vercel.app/ssemambo-dehia/#person"},
+      "telephone":"+256747740534",
+      "contactPoint":{"@type":"ContactPoint","telephone":"+256747740534","contactType":"business enquiries","areaServed":["UG","Worldwide"],"availableLanguage":["English"]},
+      "areaServed":"Worldwide",
+      "sameAs":["https://github.com/binbawy-droid","https://www.instagram.com/ugcreator46/","https://www.youtube.com/channel/UC2s2u4KcvrVMbqB2KKOwdvA"]
+    },
+    {
+      "@type":"WebSite",
+      "@id":"https://binbawy-tech-ug.vercel.app/#website",
+      "url":"https://binbawy-tech-ug.vercel.app/",
+      "name":"BINBAWY TECH UG — AI & Technology Solutions",
+      "publisher":{"@id":"https://binbawy-tech-ug.vercel.app/#organization"},
+      "inLanguage":"en-UG"
+    }
+  ]
+}
 </script>
 <style>
 :root{--paper:#f4f1e9;--ink:#20231f;--muted:#686b62;--line:#d8d4c9;--green:#263f35;--gold:#a7834e;--white:#fffdf8;--serif:'Playfair Display',Georgia,serif;--sans:'DM Sans',Arial,sans-serif}
@@ -47,7 +83,7 @@
 </head>
 <body>
 <div class="topline"><div class="wrap"><span>Independent technology studio · Uganda</span><span>Remote projects · Worldwide</span></div></div>
-<header class="wrap nav"><a class="brand" href="#">BINBAWY TECH UG<span>SOFTWARE · AI · AUTOMATION</span></a><nav class="navlinks"><a href="#services">Services</a><a href="#work">Portfolio</a><a href="#about">About</a><a href="#contact">Contact</a><a href="#jobs">Jobs</a><button class="nav-auth" id="open-auth">Sign in</button></nav></header>
+<header class="wrap nav"><a class="brand" href="#">BINBAWY TECH UG<span>SOFTWARE · AI · AUTOMATION</span></a><nav class="navlinks"><a href="#services">Services</a><a href="#work">Portfolio</a><a href="#about">About</a><a href="/ssemambo-dehia/">Founder</a><a href="#contact">Contact</a><a href="#jobs">Jobs</a><button class="nav-auth" id="open-auth">Sign in</button></nav></header>
 <main>
 <section class="wrap hero">
 <div><div class="kicker">Technology, made useful</div><h1>Build with clarity.<br><em>Work without borders.</em></h1><p class="intro">BINBAWY TECH UG is an independent software and technology studio led by Ssemambo Dehia in Uganda. We design and build digital products, AI-powered systems and practical automation for people and organisations locally and around the world.</p><div class="actions"><a class="btn" href="#contact">Discuss a project</a><a class="btn alt" href="#work">Explore the portfolio</a></div></div>
@@ -123,7 +159,17 @@
 </div></section>
 <section class="wrap section" id="about"><div class="about"><div><div class="eyebrow">The studio</div><h2>Built in Uganda. Open to the world.</h2></div><div><p>BINBAWY TECH UG is led by Ssemambo Dehia, a software developer, AI creator and automation builder. The work combines practical software engineering with experimentation in artificial intelligence, connected tools and digital products.</p><p>We welcome enquiries from businesses, founders, agencies and individuals seeking a dependable technical collaborator for computer-related work. Remote engagements are welcome across time zones; project scope, timelines and availability are agreed before work begins.</p><div class="chips"><span>Software engineering</span><span>Python</span><span>JavaScript</span><span>React</span><span>Node.js</span><span>AI & LLMs</span><span>MCP</span><span>Supabase</span><span>Workflow automation</span><span>Desktop applications</span><span>Technical support</span></div></div></div></section>
 
-<section class="wrap section" id="jobs"><div class="section-head"><div><div class="eyebrow">Careers & opportunities</div><h2>Work with BINBAWY TECH UG</h2></div><p>Published roles and contracts will appear here. Sign in to apply and track your applications.</p></div>
+
+<section class="wrap section" id="ai-team"><div class="section-head"><div><div class="eyebrow">Operating model</div><h2>Specialist AI agent team</h2></div><p>AI-assisted workflows support the agency team. Outputs are reviewed by a human before commercial commitments, hiring decisions or client-facing delivery.</p></div>
+<div class="services">
+<article class="service"><div class="num">01 / INTAKE</div><h3>Intake & Triage Director</h3><p>Classifies enquiries, checks completeness, identifies urgency and flags enterprise opportunities for human review.</p></article>
+<article class="service"><div class="num">02 / ENGINEERING</div><h3>Chief Solutions Architect</h3><p>Develops a technical approach, architecture options, dependencies, risks and delivery phases.</p></article>
+<article class="service"><div class="num">03 / COMMERCIAL</div><h3>Commercial & Pricing Strategist</h3><p>Prepares draft scopes, milestone plans and USD/UGX estimates for founder approval.</p></article>
+<article class="service"><div class="num">04 / TALENT</div><h3>Talent & Bounty Dispatcher</h3><p>Creates privacy-safe draft work packages for vetted contractors after project approval.</p></article>
+<article class="service"><div class="num">05 / DELIVERY</div><h3>Client Success & QA Lead</h3><p>Tracks delivery milestones, prepares progress updates and checks acceptance criteria.</p></article>
+<article class="service"><div class="num">06 / GOVERNANCE</div><h3>Human approval & governance</h3><p>Founder approval is required before sending binding quotes, publishing paid jobs, issuing invoices or releasing client data.</p></article>
+</div></section>
+\n<section class="wrap section" id="jobs"><div class="section-head"><div><div class="eyebrow">Careers & opportunities</div><h2>Work with BINBAWY TECH UG</h2></div><p>Published roles and contracts will appear here. Sign in to apply and track your applications.</p></div>
 <div class="jobs-list" id="jobs-list"><div class="empty-jobs">Loading current opportunities…</div></div>
 </section>
 <section class="contact" id="contact"><div class="wrap"><div class="eyebrow">Start a conversation</div><h2>Have a project, a role or a technical challenge?</h2><p>Share what you need, your preferred timeline and how to reach you. Enquiries are welcome from Uganda and internationally.</p><div class="contact-links"><a class="btn" href="tel:+256747740534">Call 0747740534</a><a class="btn alt" href="https://wa.me/256747740534" target="_blank" rel="noopener">WhatsApp 0747740534</a><a class="btn alt" href="https://www.instagram.com/ugcreator46/" target="_blank" rel="noopener">Instagram</a><a class="btn alt" href="https://github.com/binbawy-droid" target="_blank" rel="noopener">GitHub</a></div><form class="portal-form" id="enquiry-form">
