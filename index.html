@@ -78,6 +78,23 @@
 @media(max-width:440px){.engage-grid{grid-template-columns:1fr}.workspace-grid{grid-template-columns:1fr 1fr}.nav-auth{padding:8px 10px;font-size:9px}}
 
 
+.client-build-panel{margin-top:28px;padding:24px;border:1px solid var(--line);background:var(--white)}
+.client-build-panel h3{font:600 25px var(--serif);margin:5px 0 10px}
+.build-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.build-card{background:var(--white);border:1px solid var(--line);padding:18px;margin:10px 0}
+.build-card h4{font:600 21px var(--serif);margin:4px 0}
+.build-meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+.build-progress{height:7px;background:#e5e1d7;margin:12px 0;overflow:hidden}
+.build-progress span{display:block;height:100%;background:var(--green)}
+.build-columns{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.build-quote,.build-milestone{border-top:1px solid var(--line);padding:10px 0;font-size:12px}
+.admin-build-tools{margin-top:24px;padding-top:18px;border-top:1px solid var(--gold)}
+.admin-build-tools form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 22px}
+.admin-build-tools label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.admin-build-tools input,.admin-build-tools select,.admin-build-tools textarea{display:block;width:100%;padding:11px;border:1px solid var(--line);background:var(--white);font:13px var(--sans);margin-top:5px}
+.admin-build-tools .wide{grid-column:1/-1}
+@media(max-width:760px){.build-grid,.build-columns,.admin-build-tools form{grid-template-columns:1fr}.admin-build-tools .wide{grid-column:auto}}
+
 .admin-panel{margin-top:24px;padding:22px;border:1px solid var(--gold);background:#eee9dd}.admin-panel h3{font:600 24px var(--serif);margin:4px 0 12px}.admin-jobs,.admin-enquiries{display:grid;gap:8px;margin-top:14px}.admin-row{display:flex;justify-content:space-between;align-items:center;gap:14px;background:var(--white);border:1px solid var(--line);padding:12px;font-size:12px}.admin-row button{cursor:pointer;border:1px solid var(--green);background:transparent;color:var(--green);padding:7px 10px;font-size:10px}
 </style>
 </head>
@@ -104,6 +121,26 @@
 <div class="workspace-tile"><strong>Glide</strong><span>No-code client and team apps</span><a href="https://go.glideapps.com/" target="_blank" rel="noopener">Open Glide ↗</a></div>
 <div class="workspace-tile"><strong>HubSpot</strong><span>CRM, leads, deals and client tickets</span><a href="https://app.hubspot.com/" target="_blank" rel="noopener">Open HubSpot ↗</a></div>
 </div>
+<div class="client-build-panel" id="client-build-panel">
+  <div class="eyebrow">Customer build portal</div>
+  <h3>Submit a new build</h3>
+  <p class="intro" style="font-size:12px;margin:0 0 16px">Send a project brief to BINBAWY TECH UG. Submission creates an enquiry for review; it does not create a contract, charge a payment or guarantee a delivery date.</p>
+  <form class="portal-form" id="build-request-form">
+    <label>Build title <input name="build_title" required maxlength="180" placeholder="What should we build?"></label>
+    <label>Company / organisation <input name="company_name" maxlength="180"></label>
+    <label>Country <input name="country" required maxlength="100" placeholder="Uganda"></label>
+    <label>Industry <input name="industry" maxlength="120" placeholder="E-commerce, education, logistics…"></label>
+    <label>Build category <select name="engagement_type" required><option value="software_development">Web / app / software build</option><option value="ai_automation">AI & workflow automation</option><option value="website">Website / SaaS</option><option value="technical_support">Technical fix / support</option><option value="consulting">Technical consulting</option><option value="other">Other</option></select></label>
+    <label>Target budget (USD) <input name="budget_usd" type="number" min="0" step="0.01" placeholder="Optional"></label>
+    <label>Target delivery date <input name="target_date" type="date"></label>
+    <label class="wide">Requirements and expected outcome <textarea name="message" required maxlength="8000" placeholder="Describe the problem, essential features, existing systems and what a successful result looks like."></textarea></label>
+    <div class="wide"><button class="btn" type="submit">Submit build brief</button><div class="portal-message" id="build-request-message" role="status"></div></div>
+  </form>
+  <div class="build-columns">
+    <div><h3>Your active builds</h3><div id="client-build-list"><p class="intro" style="font-size:12px">Your project records will appear here after a project is opened by the team.</p></div></div>
+    <div><h3>Quotes & delivery milestones</h3><div id="client-quote-list"><p class="intro" style="font-size:12px">Approved proposals and delivery milestones will appear here when added by the team.</p></div></div>
+  </div>
+</div>
 <div class="integration-note">Notion and Monday are enabled in the Zapier integration layer. Sign in to those apps and authorise their Zapier connections to activate account-level workflows. Website-to-board synchronisation will be enabled after the connections and workflow triggers are configured.</div>
 
 <div class="admin-panel" id="admin-panel" hidden>
@@ -123,6 +160,32 @@
 </form>
 <h3>Current job listings</h3><div class="admin-jobs" id="admin-jobs"></div>
 <h3>Recent enquiries</h3><div class="admin-enquiries" id="admin-enquiries"></div>
+<div class="admin-build-tools">
+  <h3>Build pipeline administration</h3>
+  <form id="admin-build-form">
+    <label class="wide">Convert a client build enquiry <select name="enquiry_id" id="admin-enquiry-select" required><option value="">Select a build enquiry…</option></select></label>
+    <label>Project title <input name="title" required maxlength="180"></label>
+    <label>Estimated delivery <input name="estimated_delivery" type="date"></label>
+    <div class="wide"><button class="btn" type="submit">Open project</button><div class="portal-message" id="admin-build-message" role="status"></div></div>
+  </form>
+  <form id="admin-quote-form">
+    <label>Project <select name="project_id" id="admin-project-select" required><option value="">Select a project…</option></select></label>
+    <label>Quote amount (USD) <input name="price_usd" type="number" min="0" step="0.01" required></label>
+    <label>Quote status <select name="status"><option value="draft">Draft</option><option value="pending_approval">Pending founder approval</option><option value="approved">Approved for client review</option></select></label>
+    <label>Valid until <input name="valid_until" type="date"></label>
+    <label class="wide">Scope and deliverables <textarea name="scope" required maxlength="8000"></textarea></label>
+    <label class="wide">Payment URL (only after provider setup) <input name="payment_url" type="url" maxlength="1000" placeholder="Leave blank until a real payment link exists"></label>
+    <div class="wide"><button class="btn" type="submit">Save quote</button><div class="portal-message" id="admin-quote-message" role="status"></div></div>
+  </form>
+  <form id="admin-milestone-form">
+    <label>Project <select name="project_id" id="admin-milestone-project" required><option value="">Select a project…</option></select></label>
+    <label>Milestone title <input name="title" required maxlength="180"></label>
+    <label>Due date <input name="due_date" type="date"></label>
+    <label>Description <input name="description" maxlength="1000"></label>
+    <div class="wide"><button class="btn" type="submit">Add milestone</button><div class="portal-message" id="admin-milestone-message" role="status"></div></div>
+  </form>
+  <h3>Build status overview</h3><div id="admin-build-list" class="admin-jobs"></div>
+</div>
 </div>
 </section>
 <div class="availability"><div class="wrap"><strong>Available for remote work worldwide.</strong><span>Projects · Contracts · Employment · Consulting · Partnerships</span></div></div>
@@ -221,6 +284,7 @@ async function loadWorkspace(user){
   $('application-count').textContent=error?'—':String(count||0);
   $('workspace').classList.add('show');
   $('open-auth').textContent='My workspace';
+  await refreshClientBuilds(user);
   const isAdmin=user.app_metadata?.role==='admin';$('admin-panel').hidden=!isAdmin;if(isAdmin)await refreshAdminPanel();
 }
 async function refreshJobs(){
@@ -237,6 +301,15 @@ async function refreshAdminPanel(){
   $('admin-jobs').querySelectorAll('[data-toggle-job]').forEach(button=>button.addEventListener('click',async()=>{const {error}=await supabase.from('binbawy_jobs').update({published:button.dataset.published!=='true'}).eq('id',button.dataset.toggleJob);if(error){alert(error.message);return;}await refreshJobs();await refreshAdminPanel();}));
   const {data:enquiries}=await supabase.from('binbawy_service_enquiries').select('id,contact_name,email,engagement_type,status,message,created_at').order('created_at',{ascending:false}).limit(12);
   $('admin-enquiries').innerHTML=(enquiries||[]).map(item=>'<div class="admin-row"><span><strong>'+escapeHTML(item.contact_name)+'</strong> · '+escapeHTML(item.email)+'<br>'+escapeHTML(item.engagement_type)+' · '+escapeHTML(item.status)+'<br>'+escapeHTML(item.message)+'</span></div>').join('')||'<p>No enquiries yet.</p>';
+  const {data:buildEnquiries}=await supabase.from('binbawy_service_enquiries').select('id,contact_name,email,message,company_name,country,budget_usd,target_date,is_build_request').eq('is_build_request',true).order('created_at',{ascending:false}).limit(50);
+  $('admin-enquiry-select').innerHTML='<option value="">Select a build enquiry…</option>'+(buildEnquiries||[]).map(item=>'<option value="'+escapeHTML(item.id)+'">'+escapeHTML(item.contact_name)+' · '+escapeHTML(item.company_name||item.country||'Client')+' · '+escapeHTML(String(item.message||'').slice(0,65))+'</option>').join('');
+  const {data:projects}=await supabase.from('binbawy_build_projects').select('id,title,status,progress_percent,user_id,estimated_delivery').order('created_at',{ascending:false}).limit(100);
+  const projectOptions='<option value="">Select a project…</option>'+(projects||[]).map(p=>'<option value="'+escapeHTML(p.id)+'">'+escapeHTML(p.title)+' · '+escapeHTML(p.status)+'</option>').join('');
+  $('admin-project-select').innerHTML=projectOptions;$('admin-milestone-project').innerHTML=projectOptions;
+  $('admin-build-list').innerHTML=(projects||[]).map(p=>'<div class="admin-row"><span><strong>'+escapeHTML(p.title)+'</strong><br>'+escapeHTML(p.status)+' · '+escapeHTML(String(p.progress_percent))+'% · '+escapeHTML(p.estimated_delivery||'No target date')+'</span><select data-build-status="'+escapeHTML(p.id)+'"><option value="scoping">Scoping</option><option value="quoted">Quoted</option><option value="awaiting_deposit">Awaiting deposit</option><option value="in_development">In development</option><option value="qa_testing">QA testing</option><option value="ready_for_delivery">Ready for delivery</option><option value="completed">Completed</option><option value="on_hold">On hold</option><option value="cancelled">Cancelled</option></select><button type="button" data-save-build="'+escapeHTML(p.id)+'">Update</button></div>').join('')||'<p>No build projects yet.</p>';
+  $('admin-build-list').querySelectorAll('[data-build-status]').forEach(sel=>{sel.value=sel.dataset.currentStatus||'scoping';});
+  for(const p of projects||[]){const sel=$('admin-build-list').querySelector('[data-build-status="'+p.id+'"]');if(sel)sel.value=p.status;}
+  $('admin-build-list').querySelectorAll('[data-save-build]').forEach(btn=>btn.addEventListener('click',async()=>{const sel=$('admin-build-list').querySelector('[data-build-status="'+btn.dataset.saveBuild+'"]');const progress=({scoping:5,quoted:10,awaiting_deposit:15,in_development:55,qa_testing:80,ready_for_delivery:95,completed:100,on_hold:0,cancelled:0})[sel.value];const {error}=await supabase.from('binbawy_build_projects').update({status:sel.value,progress_percent:progress,updated_at:new Date().toISOString()}).eq('id',btn.dataset.saveBuild);if(error){alert(error.message);return;}await refreshAdminPanel();});
 }
 function openApplication(id,title){
   if(!currentUser){setAuthMode('signin');modal('portal-auth-modal',true);$('auth-message').textContent='Sign in or create an account before applying.';return;}
@@ -271,6 +344,82 @@ $('admin-job-form').addEventListener('submit',async e=>{
  const fd=new FormData(e.currentTarget),payload={title:String(fd.get('title')).trim(),department:String(fd.get('department')).trim()||null,employment_type:fd.get('employment_type'),work_mode:fd.get('work_mode'),location:String(fd.get('location')).trim()||null,salary_range:String(fd.get('salary_range')).trim()||null,description:String(fd.get('description')).trim(),requirements:String(fd.get('requirements')).trim()||null,application_deadline:fd.get('application_deadline')||null,published:fd.get('published')==='on',created_by:currentUser.id};
  const button=e.currentTarget.querySelector('button[type=submit]');button.disabled=true;$('admin-job-message').textContent='Saving…';
  const {error}=await supabase.from('binbawy_jobs').insert(payload);button.disabled=false;$('admin-job-message').textContent=error?'Unable to save: '+error.message:'Job listing saved.';if(!error){e.currentTarget.reset();await refreshJobs();await refreshAdminPanel();}
+});
+async function refreshClientBuilds(user){
+  const {data:projects,error}=await supabase.from('binbawy_build_projects').select('id,title,status,progress_percent,estimated_delivery,quoted_total_usd,payment_status').eq('user_id',user.id).order('created_at',{ascending:false});
+  const projectHost=$('client-build-list'),quoteHost=$('client-quote-list');
+  if(error){projectHost.textContent='Project records are temporarily unavailable.';return;}
+  if(!projects?.length){projectHost.innerHTML='<p class="intro" style="font-size:12px">No active builds yet. Submit a brief above; the team will review it before opening a project.</p>';quoteHost.innerHTML='<p class="intro" style="font-size:12px">No quotes or milestones have been issued yet.</p>';return;}
+  const ids=projects.map(p=>p.id);
+  const [{data:quotes},{data:milestones}]=await Promise.all([
+    supabase.from('binbawy_build_quotes').select('id,project_id,version,scope,price_usd,status,payment_url,valid_until,created_at').in('project_id',ids).order('created_at',{ascending:false}),
+    supabase.from('binbawy_build_milestones').select('id,project_id,title,description,status,due_date,sequence').in('project_id',ids).order('sequence',{ascending:true})
+  ]);
+  projectHost.innerHTML=projects.map(p=>'<article class="build-card"><div class="build-meta"><span>'+escapeHTML(p.status.replaceAll('_',' '))+'</span><span>'+escapeHTML(String(p.progress_percent))+'% complete</span></div><h4>'+escapeHTML(p.title)+'</h4><div class="build-progress"><span style="width:'+Math.max(0,Math.min(100,Number(p.progress_percent)||0))+'%"></span></div><div class="build-meta"><span>Target: '+escapeHTML(p.estimated_delivery||'To be agreed')+'</span><span>Payment: '+escapeHTML(p.payment_status.replaceAll('_',' '))+'</span></div></article>').join('');
+  quoteHost.innerHTML=projects.map(p=>{
+    const qs=(quotes||[]).filter(q=>q.project_id===p.id),ms=(milestones||[]).filter(m=>m.project_id===p.id);
+    return '<article class="build-card"><h4>'+escapeHTML(p.title)+'</h4>'+(qs.length?qs.map(q=>'<div class="build-quote"><strong>Quote v'+escapeHTML(String(q.version))+' · 
+ e.preventDefault();if(!currentUser){$('apply-message').textContent='Sign in before applying.';return;}
+ const payload={job_id:$('apply-job-id').value,applicant_id:currentUser.id,full_name:$('apply-name').value.trim(),email:$('apply-email').value.trim(),phone:$('apply-phone').value.trim()||null,portfolio_url:$('apply-portfolio').value.trim()||null,cv_url:$('apply-cv').value.trim()||null,cover_letter:$('apply-cover').value.trim()||null};
+ const {error}=await supabase.from('binbawy_job_applications').insert(payload);if(error){$('apply-message').textContent=error.code==='23505'?'You have already applied for this role.':error.message;return;}
+ $('apply-message').textContent='Application submitted.';await loadWorkspace(currentUser);setTimeout(()=>modal('job-apply-modal',false),1100);
+});
+$('enquiry-form').addEventListener('submit',async e=>{
+ e.preventDefault();const form=e.currentTarget,fd=new FormData(form);const payload={engagement_type:fd.get('engagement_type'),contact_name:String(fd.get('contact_name')).trim(),email:String(fd.get('email')).trim(),phone:String(fd.get('phone')).trim()||null,message:String(fd.get('message')).trim(),user_id:currentUser?.id||null};
+ const button=form.querySelector('button[type=submit]');button.disabled=true;$('enquiry-message').textContent='Sending…';
+ const {error}=await supabase.from('binbawy_service_enquiries').insert(payload);button.disabled=false;$('enquiry-message').textContent=error?'Unable to submit: '+error.message:'Enquiry received. We will follow up using the contact details you provided.';if(!error)form.reset();
+});
+supabase.auth.onAuthStateChange((event,session)=>{
+ currentUser=session?.user||null;
+ if(event==='PASSWORD_RECOVERY'){
+   authMode='recovery';$('auth-title').textContent='Choose a new password';$('auth-intro').textContent='Enter a new password for your account.';$('auth-name-wrap').hidden=true;$('auth-goal-wrap').hidden=true;$('auth-email').parentElement.hidden=true;$('auth-password').value='';$('auth-password').autocomplete='new-password';$('auth-submit').textContent='Update password';$('switch-auth').parentElement.hidden=true;$('auth-message').textContent='';modal('portal-auth-modal',true);return;
+ }
+ if(currentUser){setTimeout(()=>loadWorkspace(currentUser),0);}else{$('workspace').classList.remove('show');$('admin-panel').hidden=true;$('open-auth').textContent='Sign in';}
+});
+const {data:{session}}=await supabase.auth.getSession();if(session?.user){currentUser=session.user;await loadWorkspace(currentUser);}
+await refreshJobs();
+</script>
+</body></html>+escapeHTML(Number(q.price_usd).toFixed(2))+'</strong><div>'+escapeHTML(q.status.replaceAll('_',' '))+' · Valid until '+escapeHTML(q.valid_until||'not specified')+'</div><p>'+escapeHTML(q.scope)+'</p>'+(q.status==='approved'&&q.payment_url?'<a class="btn" href="'+escapeHTML(q.payment_url)+'" target="_blank" rel="noopener">Open payment page</a>':'')+'</div>').join(''):'<p class="intro" style="font-size:11px">No quote issued.</p>')+(ms.length?ms.map(m=>'<div class="build-milestone"><strong>'+escapeHTML(m.title)+'</strong><div>'+escapeHTML(m.status.replaceAll('_',' '))+' · '+escapeHTML(m.due_date||'No due date')+'</div>'+(m.description?'<p>'+escapeHTML(m.description)+'</p>':'')+'</div>').join(''):'<p class="intro" style="font-size:11px">Milestones will appear here when scheduled.</p>')+'</article>';
+  }).join('');
+}
+$('build-request-form').addEventListener('submit',async e=>{
+  e.preventDefault();if(!currentUser){$('build-request-message').textContent='Sign in before submitting a build brief.';return;}
+  const form=e.currentTarget,fd=new FormData(form),title=String(fd.get('build_title')).trim(),details=String(fd.get('message')).trim();
+  const payload={user_id:currentUser.id,is_build_request:true,engagement_type:fd.get('engagement_type'),contact_name:currentUser.user_metadata?.full_name||currentUser.email?.split('@')[0]||'Client',email:currentUser.email,company_name:String(fd.get('company_name')).trim()||null,country:String(fd.get('country')).trim(),industry:String(fd.get('industry')).trim()||null,budget_usd:fd.get('budget_usd')?Number(fd.get('budget_usd')):null,target_date:fd.get('target_date')||null,message:'Build: '+title+'\\n\\n'+details};
+  const button=form.querySelector('button[type=submit]');button.disabled=true;$('build-request-message').textContent='Submitting…';
+  const {error}=await supabase.from('binbawy_service_enquiries').insert(payload);button.disabled=false;
+  $('build-request-message').textContent=error?'Unable to submit: '+error.message:'Build brief submitted. It is awaiting team review; no payment has been taken.';
+  if(!error)form.reset();
+});
+$('admin-build-form').addEventListener('submit',async e=>{
+  e.preventDefault();if(currentUser?.app_metadata?.role!=='admin')return;
+  const fd=new FormData(e.currentTarget),enquiryId=String(fd.get('enquiry_id')||'');
+  const {data:enquiry,error:lookupError}=await supabase.from('binbawy_service_enquiries').select('id,user_id,contact_name,message,target_date').eq('id',enquiryId).single();
+  if(lookupError||!enquiry?.user_id){$('admin-build-message').textContent='Select a valid signed-in client build enquiry.';return;}
+  const payload={enquiry_id:enquiry.id,user_id:enquiry.user_id,title:String(fd.get('title')).trim(),estimated_delivery:fd.get('estimated_delivery')||enquiry.target_date||null,created_by:currentUser.id};
+  const {error}=await supabase.from('binbawy_build_projects').insert(payload);
+  $('admin-build-message').textContent=error?'Unable to open project: '+error.message:'Project opened. Add a draft quote and delivery milestones below.';
+  if(!error){await supabase.from('binbawy_service_enquiries').update({status:'in_progress'}).eq('id',enquiry.id);e.currentTarget.reset();await refreshAdminPanel();}
+});
+$('admin-quote-form').addEventListener('submit',async e=>{
+  e.preventDefault();if(currentUser?.app_metadata?.role!=='admin')return;
+  const fd=new FormData(e.currentTarget),status=String(fd.get('status')),price=Number(fd.get('price_usd')),payment=String(fd.get('payment_url')||'').trim();
+  if(payment&&status!=='approved'){$('admin-quote-message').textContent='A payment URL can only be attached to an approved quote.';return;}
+  const projectId=String(fd.get('project_id')),scope=String(fd.get('scope')).trim();
+  const {data:latest}=await supabase.from('binbawy_build_quotes').select('version').eq('project_id',projectId).order('version',{ascending:false}).limit(1);
+  const version=(latest?.[0]?.version||0)+1;
+  const {error}=await supabase.from('binbawy_build_quotes').insert({project_id:projectId,version,scope,price_usd:price,status,payment_url:payment||null,valid_until:fd.get('valid_until')||null,created_by:currentUser.id,approved_at:status==='approved'?new Date().toISOString():null});
+  $('admin-quote-message').textContent=error?'Unable to save quote: '+error.message:'Quote saved. No email has been sent and no payment has been collected.';
+  if(!error){e.currentTarget.reset();await refreshAdminPanel();await refreshClientBuilds(currentUser);}
+});
+$('admin-milestone-form').addEventListener('submit',async e=>{
+  e.preventDefault();if(currentUser?.app_metadata?.role!=='admin')return;
+  const fd=new FormData(e.currentTarget),projectId=String(fd.get('project_id'));
+  const {data:existing}=await supabase.from('binbawy_build_milestones').select('sequence').eq('project_id',projectId).order('sequence',{ascending:false}).limit(1);
+  const sequence=(existing?.[0]?.sequence||0)+1;
+  const {error}=await supabase.from('binbawy_build_milestones').insert({project_id:projectId,title:String(fd.get('title')).trim(),description:String(fd.get('description')||'').trim()||null,due_date:fd.get('due_date')||null,sequence});
+  $('admin-milestone-message').textContent=error?'Unable to add milestone: '+error.message:'Milestone added.';
+  if(!error){e.currentTarget.reset();await refreshAdminPanel();await refreshClientBuilds(currentUser);}
 });
 $('job-apply-form').addEventListener('submit',async e=>{
  e.preventDefault();if(!currentUser){$('apply-message').textContent='Sign in before applying.';return;}
