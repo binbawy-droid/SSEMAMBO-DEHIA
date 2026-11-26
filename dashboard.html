@@ -38,7 +38,7 @@
 </div>
 <hr class="section-rule">
 <h3>Create a job bounty</h3>
-<p class="muted">New listings are saved as drafts. Publish only after reviewing the scope, payout and applicant requirements.</p>
+<p class="muted">New listings are saved as drafts. Publish only after reviewing the scope, payout and applicant requirements. Application status changes update the portal only; contractor selection emails are not configured yet.</p>
 <form id="job-form" class="form-grid">
 <label>Job title<input name="title" required maxlength="180"></label>
 <label>Department<input name="department" maxlength="120"></label>
@@ -119,7 +119,10 @@ async function loadAdmin(user){
  if(pr.error)empty('admin-projects','Could not load builds: '+pr.error.message);
  else $('admin-projects').innerHTML=(pr.data||[]).map(p=>'<div class="row"><span><strong>'+esc(p.title)+'</strong><br><span class="muted">'+esc(p.status)+' · '+esc(p.progress_percent)+'% · '+esc(p.estimated_delivery||'No delivery date')+'</span></span></div>').join('')||'<div class="empty">No client builds yet.</div>';
  if(ar.error)empty('admin-applications','Could not load applications: '+ar.error.message);
- else $('admin-applications').innerHTML=(ar.data||[]).map(a=>'<div class="row"><span><strong>'+esc(a.full_name)+'</strong><br>'+esc(a.email)+'<br>'+(a.portfolio_url?'<a class="tag" href="'+esc(a.portfolio_url)+'" target="_blank" rel="noopener">Portfolio ↗</a>':'')+'</span><span class="tag">'+esc(a.status)+'</span></div>').join('')||'<div class="empty">No builder applications yet.</div>';
+ else $('admin-applications').innerHTML=(ar.data||[]).map(a=>'<div class="row"><span><strong>'+esc(a.full_name)+'</strong><br>'+esc(a.email)+'<br>'+(a.portfolio_url?'<a class="tag" href="'+esc(a.portfolio_url)+'" target="_blank" rel="noopener">Portfolio ↗</a>':'')+'<br><span class="muted">Application status: '+esc(a.status)+'</span></span><span><select data-app-status="'+esc(a.id)+'"><option value="submitted">Submitted</option><option value="reviewing">Reviewing</option><option value="shortlisted">Shortlisted</option><option value="interview">Interview</option><option value="accepted">Accepted</option><option value="rejected">Rejected</option></select><button class="btn alt" type="button" data-save-app="'+esc(a.id)+'">Save status</button></span></div>').join('')||'<div class="empty">No builder applications yet.</div>';
+ $('admin-applications').querySelectorAll('[data-app-status]').forEach(s=>{const row=(ar.data||[]).find(a=>a.id===s.dataset.appStatus);if(row)s.value=row.status;});
+ $('admin-applications').querySelectorAll('[data-save-app]').forEach(b=>b.addEventListener('click',async()=>{const s=$('admin-applications').querySelector('[data-app-status="'+b.dataset.saveApp+'"]');const {error}=await supabase.from('binbawy_job_applications').update({status:s.value}).eq('id',b.dataset.saveApp);if(error){alert(error.message);return;}await loadAdmin(user);}));
+
  $('admin-jobs').innerHTML=(jr.data||[]).map(j=>'<div class="row"><span><strong>'+esc(j.title)+'</strong><br><span class="muted">'+esc(j.employment_type)+' · '+esc(j.salary_range||'Compensation not listed')+'</span></span><button class="btn alt" type="button" data-job="'+esc(j.id)+'" data-published="'+String(j.published)+'">'+(j.published?'Unpublish':'Publish')+'</button></div>').join('')||'<div class="empty">No job listings yet.</div>';
  $('admin-jobs').querySelectorAll('[data-job]').forEach(b=>b.addEventListener('click',async()=>{const {error}=await supabase.from('binbawy_jobs').update({published:b.dataset.published!=='true'}).eq('id',b.dataset.job);if(error){alert(error.message);return;}await loadAdmin(user);}));
 }
