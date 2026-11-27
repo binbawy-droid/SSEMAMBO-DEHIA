@@ -6,5 +6,6 @@
   <url><loc>https://binbawy-tech-ug.vercel.app/legal.html</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
   <url><loc>https://binbawy-tech-ug.vercel.app/products/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://binbawy-tech-ug.vercel.app/products/knowledge-desk/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://binbawy-tech-ug.vercel.app/products/eslam-billing/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://binbawy-tech-ug.vercel.app/updates.html</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
 </urlset>
