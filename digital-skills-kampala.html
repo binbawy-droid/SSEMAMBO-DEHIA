@@ -32,7 +32,7 @@
 <section class="section" id="support"><h2>Other ways to support</h2><div class="grid"><article class="card"><h3>Donate equipment</h3><p>Offer working or repairable laptops, desktops, monitors, accessories or spare parts through the form above.</p></article><article class="card"><h3>Sponsor a learning cycle</h3><p>Support a defined pilot with transparent costs for devices, connectivity, learning materials, facilitator time and learner access.</p></article><article class="card"><h3>Volunteer or mentor</h3><p>Contribute practical instruction, career guidance, technical support or mentorship for beginner learners.</p></article></div></section>
 <section class="section"><div class="cta"><h2>Start a partnership conversation</h2><p>We welcome organisations that can advise on learner selection, safeguarding, venue access, programme governance and equipment stewardship.</p><div class="actions"><a class="btn" href="mailto:binbawy@gmail.com?subject=Kampala%20Digital%20Skills%20Initiative">Email the project team</a><a class="btn alt" href="https://wa.me/256747740534">WhatsApp</a></div></div></section>
 <section class="section contact" id="contact"><div><h2>Contact</h2><p><strong>BINBAWY TECH UG</strong><br>Kampala, Uganda</p><p>Email: <a href="mailto:binbawy@gmail.com">binbawy@gmail.com</a><br>Phone / WhatsApp: <a href="tel:+256747740534">+256 747 740 534</a></p></div><div><h3>Our approach</h3><p>This is an initiative in development led by BINBAWY TECH UG. We are not presenting it as a registered charity or claiming that classes, equipment donations or learner outcomes have already been delivered. We will work with established host organisations and publish programme details, budgets and results as they are confirmed.</p><p>Submissions are private and reviewed by the project team. We do not publish applicant details.</p></div></section>
-<section class="admin" id="admin"><h3>Project team access</h3><p class="notice">Restricted to authorised project administrators.</p><form id="admin-login"><div class="formgrid"><div class="field"><label>Email</label><input name="email" type="email" required></div><div class="field"><label>Password</label><input name="password" type="password" required></div></div><button class="btn" type="submit">Sign in to review submissions</button><div class="status" id="admin-status" aria-live="polite"></div></form><div id="admin-panel" hidden><div class="actions"><a class="btn" href="/digital-skills-dashboard.html">Open full operations dashboard</a><strong id="submission-count">Submissions</strong><button class="btn" id="admin-refresh" type="button">Refresh</button><button class="btn alt" id="admin-logout" type="button">Sign out</button></div><div id="submission-list"></div></div></section>
+<section class="admin" id="admin"><h3>Project team access</h3><p class="notice">Restricted to authorised project administrators.</p><div id="admin-login"><button class="btn" id="admin-google-login" type="button">Continue with Google</button><div class="status" id="admin-status" aria-live="polite"></div></div><div id="admin-panel" hidden><div class="actions"><a class="btn" href="/digital-skills-dashboard.html">Open full operations dashboard</a><strong id="submission-count">Submissions</strong><button class="btn" id="admin-refresh" type="button">Refresh</button><button class="btn alt" id="admin-logout" type="button">Sign out</button></div><div id="submission-list"></div></div></section>
 </main>
 <footer class="foot"><div class="wrap">© BINBAWY TECH UG · Kampala, Uganda · <a href="/">Main website</a> · <a href="/legal.html">Legal and privacy</a></div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -68,13 +68,24 @@ async function loadSubmissions(){
  list.querySelectorAll('[data-status]').forEach(select=>select.addEventListener('change',async()=>{const {error}=await client.from('kampala_digital_skills_submissions').update({status:select.value}).eq('id',select.dataset.status);if(error){adminStatus.textContent='Status update failed.';}else{adminStatus.textContent='Status updated.';}}));
  adminStatus.textContent='';
 }
+const ADMIN_EMAIL='binbawy@gmail.com';
 async function checkAdmin(){
  const {data:{user}}=await client.auth.getUser();
  if(!user){panel.hidden=true;return;}
- if(user.app_metadata?.role!=='admin'){await client.auth.signOut();adminStatus.textContent='This account is not authorised for initiative administration.';return;}
+ const providers=user.app_metadata?.providers||[];
+ const isGoogle=providers.includes('google')||user.app_metadata?.provider==='google';
+ if(user.email?.toLowerCase()!==ADMIN_EMAIL||user.app_metadata?.role!=='admin'||!isGoogle){
+  await client.auth.signOut();panel.hidden=true;login.hidden=false;
+  adminStatus.textContent='Access denied. Use the authorised Google account: '+ADMIN_EMAIL+'.';
+  return;
+ }
  login.hidden=true;panel.hidden=false;await loadSubmissions();
 }
-login.addEventListener('submit',async event=>{event.preventDefault();const fd=new FormData(login);adminStatus.textContent='Signing in…';const {error}=await client.auth.signInWithPassword({email:fd.get('email'),password:fd.get('password')});if(error){adminStatus.textContent='Sign-in failed. Check credentials.';return;}await checkAdmin();});
+document.getElementById('admin-google-login').addEventListener('click',async()=>{
+ adminStatus.textContent='Redirecting to Google…';
+ const {error}=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+window.location.pathname,queryParams:{prompt:'select_account'}}});
+ if(error)adminStatus.textContent='Google sign-in could not start. Check that Google is enabled in Supabase Auth.';
+});
 document.getElementById('admin-refresh').addEventListener('click',loadSubmissions);
 document.getElementById('admin-logout').addEventListener('click',async()=>{await client.auth.signOut();panel.hidden=true;login.hidden=false;adminStatus.textContent='Signed out.';});
 client.auth.getSession().then(({data})=>{if(data.session)checkAdmin();});
