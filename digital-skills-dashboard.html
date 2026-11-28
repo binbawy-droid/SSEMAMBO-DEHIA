@@ -4,7 +4,7 @@
 :root{--bg:#f2f4ef;--ink:#17211e;--muted:#65716b;--green:#123d32;--lime:#c7f36b;--line:#dce2dc;--white:#fff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,Arial,sans-serif}.shell{max-width:1180px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}.brand{font-weight:850;letter-spacing:.12em}.brand small{display:block;font-size:10px;color:var(--muted)}h1{font-size:clamp(28px,4vw,42px);margin:26px 0 4px}.muted{color:var(--muted)}.panel,.kpi{background:white;border:1px solid var(--line);border-radius:13px;padding:20px}.login{max-width:470px;margin:9vh auto}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin:20px 0}.kpi small{color:var(--muted)}.kpi strong{display:block;font-size:30px;margin-top:6px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0}.tab,button,.btn{cursor:pointer;border:0;border-radius:7px;padding:10px 14px;font-weight:750;background:#e5ece5;color:var(--ink)}.tab[aria-selected=true],.primary{background:var(--green);color:white}.danger{background:#f8e8e5;color:#8a2b1e}.layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}.field label{font-size:12px;font-weight:750}input,select,textarea{width:100%;padding:10px;border:1px solid #cbd4cd;border-radius:7px;background:#fff;font:inherit}textarea{min-height:76px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:650px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line);vertical-align:top;font-size:13px}th{font-size:11px;text-transform:uppercase;color:var(--muted)}.tag{display:inline-block;border-radius:30px;background:#edf2e8;padding:3px 8px;font-size:11px}.section{margin:18px 0}.hidden{display:none!important}.status{min-height:22px;color:var(--muted);font-size:13px;margin-top:8px}.notice{background:#fff8e8;border:1px solid #ead8ae;padding:12px;border-radius:9px;font-size:13px}.record{padding:13px 0;border-bottom:1px solid var(--line)}.record pre{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.4 ui-monospace,monospace;color:#53615a}.filter{max-width:260px}@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}}@media(max-width:480px){.shell{padding:14px}.grid{grid-template-columns:1fr 1fr}.panel{padding:14px}}
 </style></head><body><main class="shell">
 <header class="top"><div class="brand">BINBAWY TECH UG<small>KAMPALA DIGITAL SKILLS · OPERATIONS</small></div><div class="row" style="flex:0 1 auto"><a href="/digital-skills-kampala.html">Public initiative page</a><button id="logout" class="hidden">Sign out</button></div></header>
-<section id="loginBox" class="panel login"><h1>Project operations</h1><p class="muted">Administrator sign-in required. Access is restricted to accounts with the Supabase app metadata role <code>admin</code>.</p><form id="loginForm"><div class="field"><label>Email</label><input name="email" type="email" required autocomplete="username"></div><div class="field"><label>Password</label><input name="password" type="password" required autocomplete="current-password"></div><button class="primary" type="submit">Sign in</button><div id="loginStatus" class="status"></div></form></section>
+<section id="loginBox" class="panel login"><h1>Project operations</h1><p class="muted">Administrator sign-in required. Access is restricted to accounts with the Supabase app metadata role <code>admin</code>.</p><div><button class="primary" id="googleLogin" type="button">Continue with Google</button><div id="loginStatus" class="status"></div><p class="muted">Only binbawy@gmail.com is authorised for administrator access.</p></div></section>
 <section id="app" class="hidden">
 <h1>Programme dashboard</h1><p class="muted">Manage enquiries, confirmed equipment, and operational follow-ups. Only record devices after they have physically been received and checked.</p>
 <div class="notice">Privacy and safeguarding: applicant information is restricted to authorised administrators. Do not export or share learner contact details unnecessarily. Any learner under 18 must be handled with appropriate parent/guardian involvement and safeguarding procedures.</div>
@@ -22,14 +22,23 @@ const $=id=>document.getElementById(id),loginBox=$('loginBox'),app=$('app');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let submissions=[],inventory=[],tasks=[];
 function setStatus(id,msg){$(id).textContent=msg||''}
+const ADMIN_EMAIL='binbawy@gmail.com';
 async function requireAdmin(){
  const {data:{user}}=await sb.auth.getUser();
  if(!user){loginBox.classList.remove('hidden');app.classList.add('hidden');$('logout').classList.add('hidden');return false}
- if(user.app_metadata?.role!=='admin'){await sb.auth.signOut();setStatus('loginStatus','This account is not authorised.');return false}
+ const providers=user.app_metadata?.providers||[];
+ const isGoogle=providers.includes('google')||user.app_metadata?.provider==='google';
+ if(user.email?.toLowerCase()!==ADMIN_EMAIL||user.app_metadata?.role!=='admin'||!isGoogle){
+  await sb.auth.signOut();loginBox.classList.remove('hidden');app.classList.add('hidden');$('logout').classList.add('hidden');
+  setStatus('loginStatus','Access denied. Continue with the authorised Google account: '+ADMIN_EMAIL+'.');return false;
+ }
  loginBox.classList.add('hidden');app.classList.remove('hidden');$('logout').classList.remove('hidden');await refreshAll();return true;
 }
-$('loginForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget);setStatus('loginStatus','Signing in…');const {error}=await sb.auth.signInWithPassword({email:f.get('email'),password:f.get('password')});if(error){setStatus('loginStatus','Sign-in failed. Check your details.');return}await requireAdmin()});
-$('logout').addEventListener('click',async()=>{await sb.auth.signOut();loginBox.classList.remove('hidden');app.classList.add('hidden');$('logout').classList.add('hidden')});
+$('googleLogin').addEventListener('click',async()=>{
+ setStatus('loginStatus','Redirecting to Google…');
+ const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+window.location.pathname,queryParams:{prompt:'select_account'}}});
+ if(error)setStatus('loginStatus','Google sign-in could not start. Enable Google in Supabase Auth first.');
+});
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-view]').forEach(x=>x.setAttribute('aria-selected',String(x===b)));['overview','inventory','followups'].forEach(v=>$('view-'+v).classList.toggle('hidden',v!==b.dataset.view));}));
 async function refreshAll(){setStatus('globalStatus','Refreshing dashboard…');const [s,i,t]=await Promise.all([
  sb.from('kampala_digital_skills_submissions').select('*').order('created_at',{ascending:false}).limit(500),
