@@ -310,7 +310,7 @@
 <label id="auth-goal-wrap" hidden>What brings you here?<select id="auth-goal"><option value="hire_services">Hire BINBAWY TECH UG</option><option value="find_job">Find a job or contract</option><option value="collaborate">Collaborate / partner</option><option value="learn_ai">Explore AI and learning tools</option><option value="join_team">Join the team</option><option value="other">Other</option></select></label>
 <label>Email address<input id="auth-email" type="email" required autocomplete="email" maxlength="254"></label>
 <label>Password<input id="auth-password" type="password" required minlength="8" autocomplete="current-password"></label>
-<button class="btn" type="submit" id="auth-submit">Sign in</button><div class="portal-message" id="auth-message" role="status"></div>
+<button class="btn" type="submit" id="auth-submit">Sign in</button><button class="btn" type="button" id="admin-google-signin" style="margin-top:10px">Continue with Google (Admin)</button><div class="portal-message" id="auth-message" role="status"></div>
 </form><div class="modal-links"><button type="button" id="switch-auth">Create an account</button><button type="button" id="forgot-password">Forgot password?</button></div>
 </div></div>
 <div class="modal-overlay" id="job-apply-modal" role="dialog" aria-modal="true" aria-labelledby="apply-title">
@@ -328,6 +328,10 @@ const $=id=>document.getElementById(id);
 const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 function modal(id,open){$(id).classList.toggle('open',open);}
 function setAuthMode(mode){authMode=mode;const signup=mode==='signup';$('auth-title').textContent=signup?'Create your account':'Sign in to your workspace';$('auth-intro').textContent=signup?'Choose the area you want to engage with. Your workspace will be grouped around this goal.':'Use your email and password to access your personal workspace.';$('auth-name-wrap').hidden=!signup;$('auth-goal-wrap').hidden=!signup;$('auth-name').required=signup;$('auth-email').parentElement.hidden=false;$('auth-password').autocomplete=signup?'new-password':'current-password';$('auth-submit').textContent=signup?'Create account':'Sign in';$('switch-auth').parentElement.hidden=false;$('switch-auth').textContent=signup?'I already have an account':'Create an account';$('forgot-password').hidden=signup;$('auth-message').textContent='';}
+function isAuthorisedAdmin(user){
+ const providers=user?.app_metadata?.providers||[];
+ return user?.email?.toLowerCase()==='binbawy@gmail.com'&&user?.app_metadata?.role==='admin'&&(providers.includes('google')||user?.app_metadata?.provider==='google');
+}
 function goalText(goal){return ({hire_services:'Your workspace is set up for project enquiries and working with our studio.',find_job:'Your workspace is set up for careers, contract opportunities and application tracking.',collaborate:'Your workspace is set up for partnerships and collaborative projects.',learn_ai:'Your workspace is set up for AI tools, learning resources and creator workflows.',join_team:'Your workspace is set up for team opportunities and project participation.',other:'Your workspace is ready. You can update your engagement preference through support.'})[goal]||'Your workspace is ready.';}
 async function loadWorkspace(user){
   const {data:profile}=await supabase.from('binbawy_portal_profiles').select('full_name,engagement_goal').eq('id',user.id).maybeSingle();
@@ -340,7 +344,7 @@ async function loadWorkspace(user){
   $('workspace').classList.add('show');
   $('open-auth').textContent='My workspace';
   await refreshClientBuilds(user);
-  const isAdmin=user.app_metadata?.role==='admin';$('admin-panel').hidden=!isAdmin;if(isAdmin)await refreshAdminPanel();
+  const isAdmin=isAuthorisedAdmin(user);$('admin-panel').hidden=!isAdmin;if(isAdmin)await refreshAdminPanel();
 }
 async function refreshJobs(){
   const host=$('jobs-list');
@@ -376,6 +380,11 @@ $('switch-auth').addEventListener('click',()=>setAuthMode(authMode==='signin'?'s
 document.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click',()=>modal(btn.dataset.close,false)));
 document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
 function postAuthRedirect(){const next=new URLSearchParams(window.location.search).get('next');const destination=next&&next.startsWith('/')&&!next.startsWith('//')?next:'/dashboard.html';window.location.assign(destination);}
+$('admin-google-signin').addEventListener('click',async()=>{
+ const msg=$('auth-message');msg.textContent='Redirecting to Google…';
+ const {error}=await supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+'/',queryParams:{prompt:'select_account'}}});
+ if(error)msg.textContent='Google sign-in could not start. Enable Google in Supabase Auth first.';
+});
 $('auth-form').addEventListener('submit',async e=>{
   e.preventDefault();const email=$('auth-email').value.trim(),password=$('auth-password').value;const msg=$('auth-message');msg.textContent='Working…';$('auth-submit').disabled=true;
   try{
@@ -396,7 +405,7 @@ $('auth-form').addEventListener('submit',async e=>{
 $('forgot-password').addEventListener('click',async()=>{const email=$('auth-email').value.trim();if(!email){$('auth-message').textContent='Enter your email address first.';return;}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/'});$('auth-message').textContent=error?error.message:'If the account exists, a password-reset email has been sent.';});
 $('sign-out').addEventListener('click',async()=>{await supabase.auth.signOut();currentUser=null;$('workspace').classList.remove('show');$('open-auth').textContent='Sign in';});
 $('admin-job-form').addEventListener('submit',async e=>{
- e.preventDefault();if(currentUser?.app_metadata?.role!=='admin')return;
+ e.preventDefault();if(!isAuthorisedAdmin(currentUser))return;
  const fd=new FormData(e.currentTarget),payload={title:String(fd.get('title')).trim(),department:String(fd.get('department')).trim()||null,employment_type:fd.get('employment_type'),work_mode:fd.get('work_mode'),location:String(fd.get('location')).trim()||null,salary_range:String(fd.get('salary_range')).trim()||null,description:String(fd.get('description')).trim(),requirements:String(fd.get('requirements')).trim()||null,application_deadline:fd.get('application_deadline')||null,published:fd.get('published')==='on',created_by:currentUser.id};
  const button=e.currentTarget.querySelector('button[type=submit]');button.disabled=true;$('admin-job-message').textContent='Saving…';
  const {error}=await supabase.from('binbawy_jobs').insert(payload);button.disabled=false;$('admin-job-message').textContent=error?'Unable to save: '+error.message:'Job listing saved.';if(!error){e.currentTarget.reset();await refreshJobs();await refreshAdminPanel();}
